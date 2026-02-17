@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -24,15 +25,18 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.retain.retain
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -48,21 +52,28 @@ import com.vs.smartstep.core.theme.bodyMediumMedium
 import com.vs.smartstep.core.theme.bodyMediumRegular
 import com.vs.smartstep.core.theme.segmentedText
 import com.vs.smartstep.core.theme.title_Medium
+import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.round
+
 
 @Composable
 fun HeightPickerDialog(
     onDismissRequest: () -> Unit,
     onCancel : () -> Unit ,
-    onOk : (Double, Int) -> Unit
+    onOk : (Double, Int) -> Unit,
+    selectedCm : Int,
+
 
 ) {
     var selectedIndex by retain { mutableIntStateOf(0) }
-    var selectedCm by retain { mutableDoubleStateOf(0.0) }
-    var selectedFeet by retain { mutableIntStateOf(0) }
-    var selectedInches by retain { mutableIntStateOf(0) }
-    val uniqueHeights = retain {
+    var selectedCm by retain { mutableDoubleStateOf(selectedCm.toDouble()) }
+    var selectedFeet by retain { mutableIntStateOf(5) }
+    var selectedInches by retain { mutableIntStateOf(9) }
+    val listState = rememberLazyListState()
+
+    val cmValues = remember { (10..300).toList() }
+    val uniqueHeights = remember{
         (10..300)
             .map { cm ->
                 val totalInches = cm / 2.54
@@ -91,17 +102,32 @@ fun HeightPickerDialog(
         selectedInches = inches
     }
 
-    // Update cm when ft/in changes
+    LaunchedEffect( selectedIndex) {
+        if (selectedIndex == 0 && selectedCm > 0) {
+            // Scroll in cm view
+            val index = cmValues.indexOfFirst { abs(it - selectedCm) < 0.1 }
+            if (index >= 0) {
+                listState.scrollToItem(index )
+            }
+        } else if (selectedIndex == 1 && (selectedFeet > 0 || selectedInches > 0)) {
+            // Scroll in ft/in view
+            val index = uniqueHeights.indexOfFirst { pair ->
+                pair.first == selectedFeet && pair.second == selectedInches
+            }
+            if (index >= 0) {
+                listState.scrollToItem(index)
+            }
+        }
+    }
     fun updateFromFtIn(feet: Int, inches: Int) {
         selectedFeet = feet
         selectedInches = inches
-        selectedCm = (feet * 12 + inches) * 2.54
+        selectedCm = round((feet * 12 + inches) * 2.54)
     }
 
-    // Handle unit toggle - NO SCROLLING, just show equivalent
     fun onUnitChange(newIndex: Int) {
         selectedIndex = newIndex
-        // No scrolling needed - the LazyColumn will recompose and show the correct highlight
+
     }
 
 
@@ -131,15 +157,17 @@ fun HeightPickerDialog(
             Spacer(modifier = Modifier.height(24.dp))
             SingleChoiceSegmentedButton(
                 selectedIndex = selectedIndex,
-                onSelectionChange = { onUnitChange(it) }
+                onSelectionChange = { onUnitChange(it) },
+                options =  listOf("cm", "ft/in")
             )
             Spacer(modifier = Modifier.height(16.dp))
 
                 LazyColumn(
+                    state = listState,
                     modifier = Modifier.fillMaxWidth().height(176.dp)
                 ) {
                     if(selectedIndex == 0){
-                        items((10..300).toList()) { number ->
+                        items(cmValues) { number ->
                             val isSelected = selectedCm == number.toDouble()
                             Row (
                                 modifier = Modifier.fillMaxWidth().height(48.dp).background(
@@ -173,7 +201,8 @@ fun HeightPickerDialog(
                                 ).clickable{
                                     updateFromFtIn(feet, inches)
                                 },
-                                verticalAlignment = Alignment.CenterVertically
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
                             ) {
                                 Text(
                                     text = "${feet}",
@@ -252,12 +281,8 @@ fun HeightPickerDialog(
                     TextButton(
                         modifier = Modifier.width(54.dp).height(44.dp),
                         onClick = {
-                            val valueToReturn = when (selectedIndex) {
-                                0 -> selectedCm
-                                1 -> selectedFeet + (selectedInches / 12.0)
-                                else -> selectedCm
-                            }
-                            onOk(valueToReturn, selectedIndex)
+
+                            onOk(selectedCm, selectedIndex)
                         }
 
                     ) {
@@ -276,9 +301,9 @@ fun HeightPickerDialog(
 @Composable
 fun SingleChoiceSegmentedButton(modifier: Modifier = Modifier,
                                  selectedIndex : Int = 0 ,
-                                 onSelectionChange: (Int) -> Unit
+                                 onSelectionChange: (Int) -> Unit,
+                                 options : List<String>
                                 ) {
-    val options = listOf("cm", "ft/in")
 
     SingleChoiceSegmentedButtonRow(
         modifier = modifier.fillMaxWidth(),

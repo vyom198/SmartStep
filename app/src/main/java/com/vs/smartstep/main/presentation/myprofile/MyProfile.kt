@@ -61,6 +61,8 @@ import com.vs.smartstep.main.presentation.myprofile.MyProfileAction
 import com.vs.smartstep.main.presentation.myprofile.MyProfileState
 import com.vs.smartstep.main.presentation.myprofile.MyProfileViewModel
 import com.vs.smartstep.main.presentation.myprofile.components.HeightPickerDialog
+import com.vs.smartstep.main.presentation.myprofile.components.WeightPickerDialog
+import com.vs.smartstep.main.presentation.myprofile.components.getformattedHeight
 import org.koin.androidx.compose.koinViewModel
 import timber.log.Timber
 
@@ -116,9 +118,7 @@ fun MyProfileScreen(
         var enabled by retain {
             mutableStateOf(false)
         }
-        var heiPickerenabled by retain {
-            mutableStateOf(false)
-        }
+
         var selectedItem  by retain { mutableStateOf(genders[0]) }
         Column(
             modifier = Modifier
@@ -271,7 +271,7 @@ fun MyProfileScreen(
                     ).padding(horizontal = 16.dp,
                         vertical = 10.dp
                     ).clickable{
-                      heiPickerenabled = !heiPickerenabled
+                      onAction(MyProfileAction.selectingHeight)
                     },
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -284,7 +284,7 @@ fun MyProfileScreen(
                             color = TextSecondary
                         )
                         Text(
-                            text = "170 cm",
+                            text = getformattedHeight(state.selectedUnitforHeight, state.selectedHeightInCm),
                             style = MaterialTheme.typography.bodyLargeRegular,
                             color = MaterialTheme.colorScheme.onSurface
                         )
@@ -310,7 +310,7 @@ fun MyProfileScreen(
                     ).padding(horizontal = 16.dp,
                         vertical = 10.dp
                     ).clickable{
-
+                        onAction(MyProfileAction.selectingWeight)
                     },
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -323,7 +323,7 @@ fun MyProfileScreen(
                             color = TextSecondary
                         )
                         Text(
-                            text = "60 kg",
+                            text = "${state.selectedWeight} ${if(state.selectedUnitforWeight == 0) "kg" else "lbs"}",
                             style = MaterialTheme.typography.bodyLargeRegular,
                             color = MaterialTheme.colorScheme.onSurface
                         )
@@ -336,12 +336,26 @@ fun MyProfileScreen(
                         modifier = Modifier.size(24.dp)
                     )
                 }
-                if(heiPickerenabled){
-                    HeightPickerDialog(onDismissRequest = { heiPickerenabled = false },
-                          onCancel = { heiPickerenabled = false },
+                if(state.isHeightDialog){
+                    HeightPickerDialog(onDismissRequest = {onAction(MyProfileAction.onDismissHeightDialog) },
+                          onCancel = { onAction(MyProfileAction.onDismissHeightDialog) },
                           onOk = { height , index ->
                                Timber.i("Height : $height , Index : $index")
-                          }
+                                onAction(MyProfileAction.onSelectHeight(index, height))
+                          },
+                        state.selectedHeightInCm
+                    )
+                }
+
+                if(state.isWeightDialog){
+                    WeightPickerDialog(
+                        onDismissRequest = { onAction(MyProfileAction.onDismissWeightDialog) },
+                        onCancel = { onAction(MyProfileAction.onDismissWeightDialog) },
+                        onOk = { weight, index ->
+                            onAction(MyProfileAction.onSelectWeight(index, weight))
+                        },
+                        weight = state.selectedWeight,
+                        selectedIndex = state.selectedUnitforWeight
                     )
                 }
             }
@@ -350,14 +364,3 @@ fun MyProfileScreen(
     }
 
 }
-
-//@Preview
-//@Composable
-//private fun Preview() {
-//    SmartStepTheme {
-//        MyProfileScreen(
-//            state = MyProfileState(),
-//            onAction = {}
-//        )
-//    }
-//}
