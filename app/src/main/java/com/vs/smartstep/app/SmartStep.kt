@@ -2,6 +2,7 @@ package com.vs.smartstep.app
 
 import android.app.Application
 import com.vs.smartstep.BuildConfig
+import com.vs.smartstep.core.di.coreModule
 import com.vs.smartstep.main.di.mainModule
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -22,7 +23,8 @@ class SmartStep : Application() {
             androidContext(this@SmartStep)
             modules(
                 appModule,
-                mainModule
+                mainModule,
+                coreModule
 
             )
         }

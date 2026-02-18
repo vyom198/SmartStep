@@ -9,6 +9,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.rememberNavController
 import com.vs.smartstep.app.navigation.NavigationApp
+import com.vs.smartstep.main.domain.userProfileStore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import org.koin.android.ext.android.inject
+import timber.log.Timber
 
 
 class MainActivity : ComponentActivity() {
@@ -26,9 +34,20 @@ class MainActivity : ComponentActivity() {
             )
 
         )
+        val userProfileStore : userProfileStore by inject()
+        val coroutineScope : CoroutineScope by inject()
+        var isProfileSetup = false
+        coroutineScope.launch {
+           userProfileStore.isProfileSetup().collect{ bool ->
+               isProfileSetup = bool
+               Timber.i(bool.toString())
+           }
+        }
+
         setContent {
             NavigationApp(
-                  navController = rememberNavController()
+                  navController = rememberNavController(),
+                  isProfileSetup = isProfileSetup
             )
         }
     }

@@ -6,4 +6,7 @@ sealed interface AppRoute {
     @Serializable
     object Profile : AppRoute
 
+    @Serializable
+    object SmartStep : AppRoute
+
 }

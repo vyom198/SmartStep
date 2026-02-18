@@ -7,4 +7,5 @@ data class MyProfileState(
    val selectedUnitforWeight : Int = 0,
    val selectedWeight : Int = 65,
    val isWeightDialog : Boolean = false,
+    val currentGender : String = "Female"
 )
