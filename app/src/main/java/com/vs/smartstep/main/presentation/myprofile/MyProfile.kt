@@ -23,6 +23,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -57,6 +59,7 @@ import com.vs.smartstep.core.theme.bodyLargeMedium
 import com.vs.smartstep.core.theme.bodyLargeRegular
 import com.vs.smartstep.core.theme.bodySmallRegular
 import com.vs.smartstep.core.theme.title_Medium
+import com.vs.smartstep.main.presentation.components.ObserveAsEvents
 import com.vs.smartstep.main.presentation.myprofile.MyProfileAction
 import com.vs.smartstep.main.presentation.myprofile.MyProfileState
 import com.vs.smartstep.main.presentation.myprofile.MyProfileViewModel
@@ -68,10 +71,19 @@ import timber.log.Timber
 
 @Composable
 fun MyProfileRoot(
-    viewModel: MyProfileViewModel = koinViewModel()
+    viewModel: MyProfileViewModel = koinViewModel(),
+    NavigatetoApp : () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-
+    ObserveAsEvents(
+        flow = viewModel.events,
+    ) { event ->
+        when (event) {
+            MyProfileEvent.OnSaved -> {
+                NavigatetoApp()
+            }
+        }
+    }
     MyProfileScreen(
         state = state,
         onAction = viewModel::onAction
@@ -101,7 +113,9 @@ fun MyProfileScreen(
                 actions = {
                     TextButton(
                         modifier = Modifier.wrapContentSize(),
-                        onClick = { }
+                        onClick = {
+                            onAction(MyProfileAction.onSave)
+                        }
                     ) {
                         Text(
                             text = "Skip",
@@ -119,13 +133,14 @@ fun MyProfileScreen(
             mutableStateOf(false)
         }
 
-        var selectedItem  by retain { mutableStateOf(genders[0]) }
         Column(
             modifier = Modifier
-                .fillMaxSize().background(
-                   color = BackgroundSecondary
+                .fillMaxSize()
+                .background(
+                    color = BackgroundSecondary
                 )
-                .padding(paddingValues).padding(horizontal = 16.dp, vertical = 32.dp),
+                .padding(paddingValues)
+                .padding(horizontal = 16.dp, vertical = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(text =
@@ -138,14 +153,18 @@ fun MyProfileScreen(
             Spacer(modifier = Modifier.height(16.dp ))
             Column(
                 modifier = Modifier
-                    .widthIn(min = 380.dp).heightIn(216.dp)
+                    .widthIn(min = 380.dp)
+                    .heightIn(216.dp)
                     .clip(
                         RoundedCornerShape(14.dp)
-                    ).background(BackgroundWhite).border(
+                    )
+                    .background(BackgroundWhite)
+                    .border(
                         width = 1.dp,
                         color = StrokeMain,
                         shape = RoundedCornerShape(14.dp)
-                    ).padding(
+                    )
+                    .padding(
                         horizontal = 16.dp, vertical = 16.dp
 
                     ),
@@ -156,18 +175,25 @@ fun MyProfileScreen(
 
                 ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth().wrapContentHeight().clip(
-                            RoundedCornerShape(10.dp)
-                        ).background(
-                            color = BackgroundSecondary
-                        ).border(
-                            width = 1.dp,
-                            color = Color(0xffD1D1D1),
-                            shape = RoundedCornerShape(10.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                            .clip(
+                                RoundedCornerShape(10.dp)
+                            )
+                            .background(
+                                color = BackgroundSecondary
+                            )
+                            .border(
+                                width = 1.dp,
+                                color = Color(0xffD1D1D1),
+                                shape = RoundedCornerShape(10.dp)
 
-                        ).padding(horizontal = 16.dp,
-                            vertical = 10.dp
-                        ),
+                            )
+                            .padding(
+                                horizontal = 16.dp,
+                                vertical = 10.dp
+                            ),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column(
@@ -179,7 +205,7 @@ fun MyProfileScreen(
                                 color = TextSecondary
                             )
                             Text(
-                                text = selectedItem,
+                                text = state.currentGender,
                                 style = MaterialTheme.typography.bodyLargeRegular,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
@@ -190,10 +216,12 @@ fun MyProfileScreen(
                                 Icons.Default.KeyboardArrowDown,
                             tint = MaterialTheme.colorScheme.onSurface,
                             contentDescription = null,
-                            modifier = Modifier.size(24.dp).clickable{
-                                enabled = !enabled
+                            modifier = Modifier
+                                .size(24.dp)
+                                .clickable {
+                                    enabled = !enabled
 
-                            }
+                                }
                         )
                     }
 
@@ -207,7 +235,8 @@ fun MyProfileScreen(
 
                             .clip(
                                 shape = RoundedCornerShape(8.dp)
-                            ) .background(
+                            )
+                            .background(
                                 color = BackgroundSecondary
                             )
                             .border(
@@ -227,7 +256,7 @@ fun MyProfileScreen(
                             DropdownMenuItem(
                                 trailingIcon = {
                                     if (
-                                        selectedItem == item
+                                        state.currentGender == item
                                     ) {
                                         Icon(
                                             painter = painterResource(R.drawable.check),
@@ -248,7 +277,7 @@ fun MyProfileScreen(
                                 },
                                 onClick = {
                                     enabled = false
-                                    selectedItem = item
+                                    onAction(MyProfileAction.onSelectingGender(item))
 
                                 },
                                 contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
@@ -259,20 +288,28 @@ fun MyProfileScreen(
                 }
             }
                 Row(
-                    modifier = Modifier.fillMaxWidth().wrapContentHeight().clip(
-                        RoundedCornerShape(10.dp)
-                    ).background(
-                        color = BackgroundSecondary
-                    ).border(
-                        width = 1.dp,
-                        color = Color(0xffD1D1D1),
-                        shape = RoundedCornerShape(10.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .clip(
+                            RoundedCornerShape(10.dp)
+                        )
+                        .background(
+                            color = BackgroundSecondary
+                        )
+                        .border(
+                            width = 1.dp,
+                            color = Color(0xffD1D1D1),
+                            shape = RoundedCornerShape(10.dp)
 
-                    ).padding(horizontal = 16.dp,
-                        vertical = 10.dp
-                    ).clickable{
-                      onAction(MyProfileAction.selectingHeight)
-                    },
+                        )
+                        .padding(
+                            horizontal = 16.dp,
+                            vertical = 10.dp
+                        )
+                        .clickable {
+                            onAction(MyProfileAction.selectingHeight)
+                        },
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(
@@ -298,20 +335,28 @@ fun MyProfileScreen(
                     )
                 }
                 Row(
-                    modifier = Modifier.fillMaxWidth().wrapContentHeight().clip(
-                        RoundedCornerShape(10.dp)
-                    ).background(
-                        color = BackgroundSecondary
-                    ).border(
-                        width = 1.dp,
-                        color = Color(0xffD1D1D1),
-                        shape = RoundedCornerShape(10.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .clip(
+                            RoundedCornerShape(10.dp)
+                        )
+                        .background(
+                            color = BackgroundSecondary
+                        )
+                        .border(
+                            width = 1.dp,
+                            color = Color(0xffD1D1D1),
+                            shape = RoundedCornerShape(10.dp)
 
-                    ).padding(horizontal = 16.dp,
-                        vertical = 10.dp
-                    ).clickable{
-                        onAction(MyProfileAction.selectingWeight)
-                    },
+                        )
+                        .padding(
+                            horizontal = 16.dp,
+                            vertical = 10.dp
+                        )
+                        .clickable {
+                            onAction(MyProfileAction.selectingWeight)
+                        },
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(
@@ -358,8 +403,29 @@ fun MyProfileScreen(
                         selectedIndex = state.selectedUnitforWeight
                     )
                 }
-            }
 
+
+            }
+            Spacer(modifier = Modifier.weight(1f))
+            Button(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(44.dp),
+                onClick = {
+                    onAction(MyProfileAction.onSave)
+                },
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ),
+                shape = RoundedCornerShape(10.dp)
+            ) {
+                Text(
+                    text = "Start",
+                    style = MaterialTheme.typography.bodyLargeMedium,
+                )
+
+            }
         }
     }
 

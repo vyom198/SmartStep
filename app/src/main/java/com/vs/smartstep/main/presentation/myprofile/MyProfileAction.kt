@@ -11,4 +11,8 @@ sealed interface MyProfileAction {
 
     object  selectingWeight : MyProfileAction
 
+    object  onSave : MyProfileAction
+
+    data class onSelectingGender(val gender : String) : MyProfileAction
+
 }
