@@ -10,7 +10,11 @@ interface userProfileStore {
     suspend fun  saveWeightWithUnit (unit : Int , weight :Int)
     suspend fun  saveGender(gender : String )
     suspend fun  saveheightWithUnit ( unit : Int , height : Int)
+    suspend fun askedBackgroundPermission(isAsked : Boolean)
+    suspend fun getIsbackgroundAsked() : Boolean
 
+    suspend fun addPermissionCount()
+    fun getPermissionCount () : Flow<Int>
 
       fun isProfileSetup(): Flow<Boolean>
 }
