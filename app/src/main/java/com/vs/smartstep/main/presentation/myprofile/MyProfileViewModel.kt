@@ -27,7 +27,8 @@ class MyProfileViewModel(
     val state = _state
         .onStart {
             if (!hasLoadedInitialData) {
-                /** Load initial data here **/
+               loadData()
+                fillData()
                 hasLoadedInitialData = true
             }
         }
@@ -37,7 +38,34 @@ class MyProfileViewModel(
             initialValue = MyProfileState()
         )
 
+    private fun loadData(){
+        viewModelScope.launch {
+            userProfileStore.isProfileSetup().collect { bool ->
+                _state.update {
+                    it.copy(
+                        dataNotNull = bool
 
+                    )
+                }
+            }
+        }
+    }
+    private fun fillData(){
+        viewModelScope.launch {
+            val gender = userProfileStore.getGender()
+            val height = userProfileStore.getHeightWithUnit()
+            val weight = userProfileStore.getWeightWithUnit()
+            _state.update {
+                it.copy(
+                    currentGender = gender,
+                    selectedUnitforHeight = height.first,
+                    selectedHeightInCm = height.second,
+                    selectedUnitforWeight = weight.first,
+                    selectedWeight = weight.second
+                )
+            }
+        }
+    }
     private fun storeData(){
         viewModelScope.launch {
             withContext(Dispatchers.IO){

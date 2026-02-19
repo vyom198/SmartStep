@@ -10,4 +10,8 @@ sealed interface SmartStepHomeAction {
 
     data object onClickContinueBackground : SmartStepHomeAction
 
+    data object onClickFixCount : SmartStepHomeAction
+    data object OnDisposed : SmartStepHomeAction
 }
+
+

@@ -15,6 +15,8 @@ import com.vs.smartstep.main.domain.userProfileStore
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -30,16 +32,10 @@ class SmartStepHomeViewModel(
     private val eventChannel = Channel<SmartStepHomeEvent>()
     val events = eventChannel.receiveAsFlow()
     private val _state = MutableStateFlow(SmartStepHomeState())
+
     val state = _state
         .onStart {
-            viewModelScope.launch {
-                _state.update {
-                    it.copy(
-                        isIgnoringBatteryOpti = isIgnoringBatteryOptimizations(context)
-                    )
-                }
-            }
-
+            isIgnoringBatteryOptimizations(context)
             checkActivityPermission()
 
         }
@@ -79,13 +75,19 @@ class SmartStepHomeViewModel(
         }
     }
 
-    private fun isIgnoringBatteryOptimizations(context: Context): Boolean {
+    private fun isIgnoringBatteryOptimizations(context: Context) {
+        viewModelScope.launch {
         val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
-        return powerManager.isIgnoringBatteryOptimizations(context.packageName)
+        val value =  powerManager.isIgnoringBatteryOptimizations(context.packageName)
+
+            _state.update {
+                it.copy(
+                    isIgnoringBatteryOpti = value
+                )
+            }
+        }
     }
-    fun onResume() {
-        checkActivityPermission()
-    }
+
     fun onAction(action: SmartStepHomeAction) {
         when (action) {
 
@@ -157,24 +159,34 @@ class SmartStepHomeViewModel(
 
             SmartStepHomeAction.onClickContinueBackground -> {
                 viewModelScope.launch {
-
-
-                        ignoreBatteryOptimizaiton()
-
+                    ignoreBatteryOptimizaiton()
                     _state.update {
                         it.copy(
-                            showBackgroundRationale = false
-
+                            showBackgroundRationale = false,
                         )
                     }
                 }
+            }
+
+            SmartStepHomeAction.onClickFixCount -> {
+                viewModelScope.launch {
+                    _state.update {
+                        it.copy(
+                            showBackgroundRationale = true
+                        )
+                    }
+                }
+            }
+
+            SmartStepHomeAction.OnDisposed -> {
+                isIgnoringBatteryOptimizations(context)
             }
         }
     }
 
     private fun openBackgroundDialog() {
-        val exempt = isIgnoringBatteryOptimizations(context)
-        if(!exempt) {
+        isIgnoringBatteryOptimizations(context)
+        if(_state.value.isIgnoringBatteryOpti) {
             viewModelScope.launch {
                 if (!userProfileStore.getIsbackgroundAsked()) {
                     _state.update {

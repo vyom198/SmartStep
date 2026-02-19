@@ -35,7 +35,14 @@ fun NavigationApp(
         }
 
         composable<AppRoute.SmartStep> {
-            SmartStepHomeRoot()
+            SmartStepHomeRoot(
+                onNavigatetoProfileScreen = {
+                       navController.navigate(AppRoute.Profile){
+                           launchSingleTop = true
+                       }
+                }
+
+            )
         }
 
 
