@@ -11,6 +11,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -29,11 +30,12 @@ import com.vs.smartstep.core.theme.title_Medium
 @Composable
 fun AllowBackgroundBottomSheet(
     onClick: () -> Unit,
+    sheetState: SheetState
 
     ) {
     ModalBottomSheet(
         onDismissRequest = {},
-        sheetState = rememberModalBottomSheetState(),
+        sheetState = sheetState,
         // Remove the height/background from here
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         containerColor = MaterialTheme.colorScheme.surface,

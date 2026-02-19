@@ -112,18 +112,20 @@ fun MyProfileScreen(
                         )
                 },
                 actions = {
-                    TextButton(
-                        modifier = Modifier.wrapContentSize(),
-                        onClick = {
-                            onAction(MyProfileAction.onSave)
-                        }
-                    ) {
-                        Text(
-                            text = "Skip",
-                            style = MaterialTheme.typography.bodyLargeMedium,
-                            color = MaterialTheme.colorScheme.primary
+                    if(!state.dataNotNull) {
+                        TextButton(
+                            modifier = Modifier.wrapContentSize(),
+                            onClick = {
+                                onAction(MyProfileAction.onSave)
+                            }
+                        ) {
+                            Text(
+                                text = "Skip",
+                                style = MaterialTheme.typography.bodyLargeMedium,
+                                color = MaterialTheme.colorScheme.primary
 
-                        )
+                            )
+                        }
                     }
                 }
             )
@@ -142,15 +144,24 @@ fun MyProfileScreen(
                 )
                 .padding(paddingValues)
                 .padding(horizontal = 16.dp, vertical = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = if(state.dataNotNull) Alignment.Start else Alignment.CenterHorizontally
         ) {
-            Text(text =
-                "This information helps calculate your activity more accurately.",
-                modifier = Modifier.width(340.dp),
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.bodyLargeMedium,
-                color = MaterialTheme.colorScheme.onSurface
+            if(state.dataNotNull){
+                Text(text =
+                    "Personal Settings",
+                    style = MaterialTheme.typography.bodyLargeMedium,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
+            }else {
+                Text(
+                    text =
+                        "This information helps calculate your activity more accurately.",
+                    modifier = Modifier.width(340.dp),
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.bodyLargeMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
             Spacer(modifier = Modifier.height(16.dp ))
             Column(
                 modifier = Modifier
@@ -422,7 +433,7 @@ fun MyProfileScreen(
                 shape = RoundedCornerShape(10.dp)
             ) {
                 Text(
-                    text = "Start",
+                    text = if(state.dataNotNull)"Save" else "Start",
                     style = MaterialTheme.typography.bodyLargeMedium,
                     color = TextWhite
                 )

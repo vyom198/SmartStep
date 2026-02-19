@@ -36,7 +36,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
@@ -61,6 +63,7 @@ import com.vs.smartstep.main.presentation.components.ObserveAsEvents
 import com.vs.smartstep.main.presentation.smartstep.components.AllowAccessBottomS
 import com.vs.smartstep.main.presentation.smartstep.components.AllowBackgroundBottomSheet
 import com.vs.smartstep.main.presentation.smartstep.components.OpenAppBottomSheet
+import com.vs.smartstep.main.presentation.smartstep.components.SmartStepDrawerSheet
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import timber.log.Timber
@@ -68,10 +71,15 @@ import timber.log.Timber
 
 @Composable
 fun SmartStepHomeRoot(
-    viewModel: SmartStepHomeViewModel = koinViewModel()
+    viewModel: SmartStepHomeViewModel = koinViewModel(),
+    onNavigatetoProfileScreen : () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-
+    LifecycleEventEffect(
+        Lifecycle.Event.ON_RESUME
+    ) {
+        viewModel.onAction(SmartStepHomeAction.OnDisposed)
+    }
     ObserveAsEvents(
          viewModel.events,
     ) { event ->
@@ -93,7 +101,8 @@ fun SmartStepHomeRoot(
     }
     SmartStepHomeScreen(
         state = state,
-        onAction = viewModel::onAction
+        onAction = viewModel::onAction,
+        onNavigatetoProfileScreen = onNavigatetoProfileScreen
     )
 }
 
@@ -102,10 +111,12 @@ fun SmartStepHomeRoot(
 fun SmartStepHomeScreen(
     state: SmartStepHomeState,
     onAction: (SmartStepHomeAction) -> Unit,
+    onNavigatetoProfileScreen : () -> Unit
 ) {
     val context = LocalContext.current
     val activity = context as? Activity
     val show = activity?.shouldShowRequestPermissionRationale(Manifest.permission.ACTIVITY_RECOGNITION)
+     val bottomSheetState = rememberModalBottomSheetState()
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -130,76 +141,19 @@ fun SmartStepHomeScreen(
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            ModalDrawerSheet(
-                drawerContainerColor = MaterialTheme.colorScheme.background,
-            ) {
+            SmartStepDrawerSheet(
+                state = state,
+                onClickFixCount = {
+                    onAction(SmartStepHomeAction.onClickFixCount)
+                },
+                onClickStepGoal = {
 
-                Column(
-                    modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp)
-
-                ) {
-
-                    NavigationDrawerItem(
-                        label = {
-                            Text(
-                                text = "Fix the “Stop Counting Steps” issue",
-                                style = MaterialTheme.typography.bodyLargeMedium,
-                                color = MaterialTheme.colorScheme.onPrimary
-                            )
-                        },
-                        selected = false,
-                        onClick = {
-
-                        }
-                    )
-                    HorizontalDivider()
-                    NavigationDrawerItem(
-
-                        label = {
-                            Text(
-                                text = "Step Goal",
-                                style = MaterialTheme.typography.bodyLargeMedium,
-                                color = MaterialTheme.colorScheme.onPrimary
-                            )
-                        },
-                        selected = false,
-                        onClick = {
-
-                        }
-                    )
-                    HorizontalDivider()
-                    NavigationDrawerItem(
-
-                        label = {
-                            Text(
-                                text = "Personal Settings",
-                                style = MaterialTheme.typography.bodyLargeMedium,
-                                color = MaterialTheme.colorScheme.onPrimary
-                            )
-                        },
-                        selected = false,
-                        onClick = {
-
-                        }
-                    )
-                    HorizontalDivider()
-                    NavigationDrawerItem(
-                        label = {
-                            Text(
-                                text = "Exit",
-                                style = MaterialTheme.typography.bodyLargeMedium,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        },
-                        selected = false,
-                        onClick = {
-
-                        }
-                    )
+                },
+                onClickPersonalSettings = onNavigatetoProfileScreen,
+                onClickExit = {
 
                 }
-
-            }
+            )
         },
     ) {
 
@@ -337,7 +291,8 @@ fun SmartStepHomeScreen(
                 AllowBackgroundBottomSheet(
                     onClick = {
                         onAction(SmartStepHomeAction.onClickContinueBackground)
-                    }
+                    },
+                    sheetState = bottomSheetState
                 )
             }
 
