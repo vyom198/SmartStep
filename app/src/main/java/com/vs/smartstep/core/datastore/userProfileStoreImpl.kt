@@ -25,7 +25,9 @@ class userProfileStoreImpl(
         val HEIGHT_UNIT = intPreferencesKey("height_unit") // 0 = cm, 1 = ft/in
         val HEIGHT_VALUE = intPreferencesKey("height_value")
 
-        val SAVED = booleanPreferencesKey("saved")
+        val BackgroundAsked = booleanPreferencesKey("asked")
+
+        val PermissionCount = intPreferencesKey("permission_count")
 
     }
 
@@ -66,6 +68,30 @@ class userProfileStoreImpl(
         dataStore.edit { preferences ->
             preferences[Keys.HEIGHT_UNIT] = unit
             preferences[Keys.HEIGHT_VALUE] = height
+        }
+    }
+
+    override suspend fun askedBackgroundPermission(isAsked: Boolean) {
+       dataStore.edit {
+           it[Keys.BackgroundAsked] = isAsked
+       }
+    }
+
+    override suspend fun getIsbackgroundAsked(): Boolean {
+        val preferences = dataStore.data.first()
+        return preferences[Keys.BackgroundAsked] ?: false
+    }
+
+    override suspend fun addPermissionCount() {
+        dataStore.edit {
+            val currentCount = it[Keys.PermissionCount] ?: 0
+            it[Keys.PermissionCount] = currentCount + 1
+        }
+    }
+
+    override fun getPermissionCount(): Flow<Int> {
+        return dataStore.data.map { preferences ->
+            preferences[Keys.PermissionCount] ?: 0
         }
     }
 

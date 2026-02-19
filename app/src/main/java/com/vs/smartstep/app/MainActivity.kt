@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.rememberNavController
 import com.vs.smartstep.app.navigation.NavigationApp
+import com.vs.smartstep.core.theme.SmartStepTheme
 import com.vs.smartstep.main.domain.userProfileStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
@@ -24,10 +25,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         installSplashScreen()
         enableEdgeToEdge(
-           statusBarStyle = SystemBarStyle.light(
-               Color.Transparent.hashCode(),
-               Color.Transparent.hashCode()
-           ),
+            statusBarStyle = SystemBarStyle.light(
+                Color.Transparent.hashCode(),
+                Color.Transparent.hashCode()
+            ),
             navigationBarStyle = SystemBarStyle.light(
                 Color.Transparent.hashCode(),
                 Color.Transparent.hashCode()
@@ -40,15 +41,17 @@ class MainActivity : ComponentActivity() {
         coroutineScope.launch {
            userProfileStore.isProfileSetup().collect{ bool ->
                isProfileSetup = bool
-               Timber.i(bool.toString())
            }
         }
 
         setContent {
-            NavigationApp(
-                  navController = rememberNavController(),
-                  isProfileSetup = isProfileSetup
-            )
+            SmartStepTheme {
+                NavigationApp(
+                    navController = rememberNavController(),
+                    isProfileSetup = isProfileSetup
+                )
+            }
+
         }
     }
 }

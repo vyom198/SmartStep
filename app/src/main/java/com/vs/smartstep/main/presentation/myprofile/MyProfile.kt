@@ -55,6 +55,7 @@ import com.vs.smartstep.core.theme.BackgroundSecondary
 import com.vs.smartstep.core.theme.BackgroundWhite
 import com.vs.smartstep.core.theme.StrokeMain
 import com.vs.smartstep.core.theme.TextSecondary
+import com.vs.smartstep.core.theme.TextWhite
 import com.vs.smartstep.core.theme.bodyLargeMedium
 import com.vs.smartstep.core.theme.bodyLargeRegular
 import com.vs.smartstep.core.theme.bodySmallRegular
@@ -423,6 +424,7 @@ fun MyProfileScreen(
                 Text(
                     text = "Start",
                     style = MaterialTheme.typography.bodyLargeMedium,
+                    color = TextWhite
                 )
 
             }
