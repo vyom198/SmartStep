@@ -11,7 +11,10 @@ import android.provider.Settings
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.vs.smartstep.main.domain.StepProvider
 import com.vs.smartstep.main.domain.userProfileStore
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -22,11 +25,13 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 class SmartStepHomeViewModel(
     private val context: Context,
-    private val userProfileStore: userProfileStore
+    private val userProfileStore: userProfileStore,
+    private val stepProvider: StepProvider
 ) : ViewModel() {
 
     private val eventChannel = Channel<SmartStepHomeEvent>()
@@ -35,8 +40,11 @@ class SmartStepHomeViewModel(
 
     val state = _state
         .onStart {
+
             isIgnoringBatteryOptimizations(context)
             checkActivityPermission()
+            loadSteps()
+            loadStepsGoal()
 
         }
         .stateIn(
@@ -45,6 +53,29 @@ class SmartStepHomeViewModel(
             initialValue = SmartStepHomeState()
         )
 
+    private fun loadSteps(){
+        viewModelScope.launch {
+            stepProvider.steps.collect { steps->
+                _state.update {
+                    it.copy(
+                        stepCount = steps
+                    )
+                }
+            }
+        }
+    }
+    private fun loadStepsGoal() {
+        viewModelScope.launch {
+            userProfileStore.getStep().collect { step->
+                _state.update {
+                    it.copy(
+                        dailyGoal = step
+                    )
+
+                }
+            }
+        }
+    }
     private fun checkActivityPermission() {
         viewModelScope.launch {
             userProfileStore.getPermissionCount().collect { count ->
@@ -180,6 +211,56 @@ class SmartStepHomeViewModel(
 
             SmartStepHomeAction.OnDisposed -> {
                 isIgnoringBatteryOptimizations(context)
+            }
+
+            SmartStepHomeAction.stepGoalBottomSheet -> {
+                _state.update {
+                    it.copy(
+                        stepGoalBS = !it.stepGoalBS
+                    )
+                }
+            }
+
+            is SmartStepHomeAction.saveStep -> {
+                viewModelScope.launch {
+                    userProfileStore.saveStep(action.steps)
+                    _state.update {
+                        it.copy(
+                            stepGoalBS = false
+                        )
+                    }
+                }
+            }
+
+            SmartStepHomeAction.startSensor ->{
+                viewModelScope.launch(Dispatchers.IO) {
+                    stepProvider.startListening()
+                }
+
+            }
+
+            SmartStepHomeAction.onExitConfirm -> {
+                viewModelScope.launch {
+                 withContext(Dispatchers.Main) {
+                     _state.update {
+                         it.copy(
+                             exitDialog = false
+                         )
+                     }
+                 }
+                  withContext(Dispatchers.IO) {
+                      val job = async { stepProvider.stopListening() }
+                      job.await()
+                  }
+                   eventChannel.send(SmartStepHomeEvent.TerminateApp)
+                }
+            }
+            SmartStepHomeAction.onExitOrDismissClick -> {
+                _state.update {
+                    it.copy(
+                        exitDialog = !it.exitDialog
+                    )
+                }
             }
         }
     }

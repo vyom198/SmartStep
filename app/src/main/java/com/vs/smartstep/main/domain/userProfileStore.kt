@@ -17,4 +17,8 @@ interface userProfileStore {
     fun getPermissionCount () : Flow<Int>
 
       fun isProfileSetup(): Flow<Boolean>
+
+    suspend fun saveStep(step : Int)
+    fun getStep() : Flow<Int>
+
 }
