@@ -29,6 +29,8 @@ class userProfileStoreImpl(
 
         val PermissionCount = intPreferencesKey("permission_count")
 
+        val STEP_GOAL  = intPreferencesKey("step_goal")
+
     }
 
 
@@ -101,6 +103,19 @@ class userProfileStoreImpl(
             val gender = preferences[Keys.GENDER]
             !gender.isNullOrBlank()
         }
+
+    override suspend fun saveStep(step: Int) {
+        dataStore.edit {
+            it[Keys.STEP_GOAL] = step
+        }
+    }
+
+    override fun getStep(): Flow<Int> {
+        return dataStore.data.map { preferences ->
+            preferences[Keys.STEP_GOAL] ?: 0
+        }
+
+    }
 
 
 }

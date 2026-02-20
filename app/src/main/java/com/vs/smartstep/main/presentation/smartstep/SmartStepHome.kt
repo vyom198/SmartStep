@@ -62,8 +62,11 @@ import com.vs.smartstep.core.theme.title_Medium
 import com.vs.smartstep.main.presentation.components.ObserveAsEvents
 import com.vs.smartstep.main.presentation.smartstep.components.AllowAccessBottomS
 import com.vs.smartstep.main.presentation.smartstep.components.AllowBackgroundBottomSheet
+import com.vs.smartstep.main.presentation.smartstep.components.ExitDialog
 import com.vs.smartstep.main.presentation.smartstep.components.OpenAppBottomSheet
 import com.vs.smartstep.main.presentation.smartstep.components.SmartStepDrawerSheet
+import com.vs.smartstep.main.presentation.smartstep.components.StepGoalBottomSheet
+import com.vs.smartstep.main.presentation.util.toCommaString
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import timber.log.Timber
@@ -75,6 +78,7 @@ fun SmartStepHomeRoot(
     onNavigatetoProfileScreen : () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val context  = LocalContext.current
     LifecycleEventEffect(
         Lifecycle.Event.ON_RESUME
     ) {
@@ -97,6 +101,14 @@ fun SmartStepHomeRoot(
                        }
                    }
             }
+
+            SmartStepHomeEvent.TerminateApp -> {
+                val activity = context as? Activity
+                activity?.let {
+                    it.finishAffinity()
+                    System.exit(0)
+                }
+            }
         }
     }
     SmartStepHomeScreen(
@@ -112,8 +124,9 @@ fun SmartStepHomeScreen(
     state: SmartStepHomeState,
     onAction: (SmartStepHomeAction) -> Unit,
     onNavigatetoProfileScreen : () -> Unit
+
 ) {
-    val context = LocalContext.current
+   val context = LocalContext.current
     val activity = context as? Activity
     val show = activity?.shouldShowRequestPermissionRationale(Manifest.permission.ACTIVITY_RECOGNITION)
      val bottomSheetState = rememberModalBottomSheetState()
@@ -124,6 +137,13 @@ fun SmartStepHomeScreen(
 
         onAction(SmartStepHomeAction.UpdatePermissionStatus(isGranted))
 
+    }
+    LaunchedEffect(
+        state.dailyGoal
+    ) {
+        if (state.dailyGoal > 0) {
+            onAction(SmartStepHomeAction.startSensor)
+        }
     }
     LaunchedEffect(Unit) {
         if(!state.hasActivityPermission && state.count < 2 ){
@@ -137,6 +157,7 @@ fun SmartStepHomeScreen(
 
     }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+
     val scope = rememberCoroutineScope()
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -147,11 +168,11 @@ fun SmartStepHomeScreen(
                     onAction(SmartStepHomeAction.onClickFixCount)
                 },
                 onClickStepGoal = {
-
+                   onAction(SmartStepHomeAction.stepGoalBottomSheet)
                 },
                 onClickPersonalSettings = onNavigatetoProfileScreen,
                 onClickExit = {
-
+                   onAction(SmartStepHomeAction.onExitOrDismissClick)
                 }
             )
         },
@@ -230,12 +251,12 @@ fun SmartStepHomeScreen(
 
                         Spacer(modifier = Modifier.height(10.dp))
                         Text(
-                            text = "4,523",
+                            text = state.stepCount.toCommaString(),
                             style = MaterialTheme.typography.title_Accent,
                             color = Color.White
                         )
                         Text(
-                            text = "/6000 Steps",
+                            text = "/${state.dailyGoal} Steps",
                             style = MaterialTheme.typography.title_Medium,
                             color = Color.White.copy(alpha = 0.9f)
                         )
@@ -250,8 +271,9 @@ fun SmartStepHomeScreen(
                             ).padding(horizontal = 1.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
+
                             Box(
-                                modifier = Modifier.fillMaxWidth(0.4f).height(
+                                modifier = Modifier.fillMaxWidth(state.progress).height(
                                     8.dp
                                 ).clip(
                                     RoundedCornerShape(99)
@@ -293,6 +315,29 @@ fun SmartStepHomeScreen(
                         onAction(SmartStepHomeAction.onClickContinueBackground)
                     },
                     sheetState = bottomSheetState
+                )
+            }
+
+            if(state.stepGoalBS){
+                StepGoalBottomSheet(
+                    state = state,
+                    onDismiss = {
+                        onAction(SmartStepHomeAction.stepGoalBottomSheet)
+                    },
+                    onConfirm = {
+                        onAction(SmartStepHomeAction.saveStep(it))
+                    }
+                )
+            }
+
+            if(state.exitDialog){
+                ExitDialog(
+                    onDismiss = {
+                        onAction(SmartStepHomeAction.onExitOrDismissClick)
+                    },
+                    onConfirm = {
+                        onAction(SmartStepHomeAction.onExitConfirm)
+                    }
                 )
             }
 
