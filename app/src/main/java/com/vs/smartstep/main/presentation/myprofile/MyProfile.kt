@@ -67,6 +67,7 @@ import com.vs.smartstep.main.presentation.myprofile.MyProfileViewModel
 import com.vs.smartstep.main.presentation.myprofile.components.HeightPickerDialog
 import com.vs.smartstep.main.presentation.myprofile.components.WeightPickerDialog
 import com.vs.smartstep.main.presentation.myprofile.components.getformattedHeight
+import com.vs.smartstep.main.presentation.util.CmToFeet
 import org.koin.androidx.compose.koinViewModel
 import timber.log.Timber
 
@@ -393,14 +394,18 @@ fun MyProfileScreen(
                         modifier = Modifier.size(24.dp)
                     )
                 }
+
                 if(state.isHeightDialog){
+                    val heightInFeets  = CmToFeet(state.selectedHeightInCm.toDouble())
                     HeightPickerDialog(onDismissRequest = {onAction(MyProfileAction.onDismissHeightDialog) },
                           onCancel = { onAction(MyProfileAction.onDismissHeightDialog) },
                           onOk = { height , index ->
-                               Timber.i("Height : $height , Index : $index")
                                 onAction(MyProfileAction.onSelectHeight(index, height))
                           },
-                        state.selectedHeightInCm
+                        state.selectedHeightInCm,
+                        state.selectedUnitforHeight,
+                        heightInFeets.first,
+                        heightInFeets.second
                     )
                 }
 
