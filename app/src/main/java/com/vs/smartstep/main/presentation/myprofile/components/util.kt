@@ -2,6 +2,7 @@ package com.vs.smartstep.main.presentation.myprofile.components
 
 import kotlin.math.floor
 import kotlin.math.round
+import kotlin.math.roundToInt
 
 fun getformattedHeight(index : Int , heightIncm : Int):String{
     return when(index){
@@ -27,3 +28,10 @@ fun getformattedHeight(index : Int , heightIncm : Int):String{
     }
 }
 
+fun lbsFromKg(kg: Int): Int {
+    return (kg * 2.20462).roundToInt()
+}
+
+fun kgFromLbs(lbs: Int): Int {
+    return (lbs / 2.20462).roundToInt()
+}

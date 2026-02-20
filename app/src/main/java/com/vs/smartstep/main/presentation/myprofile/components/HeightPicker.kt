@@ -3,15 +3,23 @@ package com.vs.smartstep.main.presentation.myprofile.components
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.snapping.SnapPosition
+import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -22,6 +30,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -52,6 +61,7 @@ import com.vs.smartstep.core.theme.bodyMediumMedium
 import com.vs.smartstep.core.theme.bodyMediumRegular
 import com.vs.smartstep.core.theme.segmentedText
 import com.vs.smartstep.core.theme.title_Medium
+import timber.log.Timber
 import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.round
@@ -63,17 +73,19 @@ fun HeightPickerDialog(
     onCancel : () -> Unit ,
     onOk : (Double, Int) -> Unit,
     selectedCm : Int,
-
-
+    selectedIndex: Int,
+    selectedFeet : Int,
+    selectedInches : Int
 ) {
-    var selectedIndex by retain { mutableIntStateOf(0) }
+
+    var selectedIndex by retain { mutableIntStateOf(selectedIndex) }
     var selectedCm by retain { mutableDoubleStateOf(selectedCm.toDouble()) }
-    var selectedFeet by retain { mutableIntStateOf(5) }
-    var selectedInches by retain { mutableIntStateOf(9) }
-    val listState = rememberLazyListState()
+    var selectedFeet by retain { mutableIntStateOf(selectedFeet) }
+    var selectedInches by retain { mutableIntStateOf(selectedInches) }
+
 
     val cmValues = remember { (10..300).toList() }
-    val uniqueHeights = remember{
+    val uniqueHeights = remember {
         (10..300)
             .map { cm ->
                 val totalInches = cm / 2.54
@@ -88,7 +100,7 @@ fun HeightPickerDialog(
             .toSet()
             .sortedBy { (feet, inches) -> feet * 12 + inches }
     }
-    // Update ft/in when cm changes
+
     fun updateFromCm(cm: Double) {
         selectedCm = cm
         val totalInches = cm / 2.54
@@ -102,23 +114,6 @@ fun HeightPickerDialog(
         selectedInches = inches
     }
 
-    LaunchedEffect( selectedIndex) {
-        if (selectedIndex == 0 && selectedCm > 0) {
-            // Scroll in cm view
-            val index = cmValues.indexOfFirst { abs(it - selectedCm) < 0.1 }
-            if (index >= 0) {
-                listState.scrollToItem(index )
-            }
-        } else if (selectedIndex == 1 && (selectedFeet > 0 || selectedInches > 0)) {
-            // Scroll in ft/in view
-            val index = uniqueHeights.indexOfFirst { pair ->
-                pair.first == selectedFeet && pair.second == selectedInches
-            }
-            if (index >= 0) {
-                listState.scrollToItem(index)
-            }
-        }
-    }
     fun updateFromFtIn(feet: Int, inches: Int) {
         selectedFeet = feet
         selectedInches = inches
@@ -129,78 +124,120 @@ fun HeightPickerDialog(
         selectedIndex = newIndex
 
     }
+    val ftIndex by remember { mutableIntStateOf(uniqueHeights.indexOfFirst { pair ->
+        pair.first == selectedFeet && pair.second == selectedInches
+    }.coerceAtLeast(0)) }
+
+    val cmIndex by remember { mutableIntStateOf(cmValues.indexOf(selectedCm.toInt()).coerceAtLeast(0)) }
+    val cmState = rememberLazyListState(
+        initialFirstVisibleItemIndex = cmIndex
+    )
+    val ftInState = rememberLazyListState(
+        initialFirstVisibleItemIndex = ftIndex
+    )
+    val snapBehaviorFtIn =
+        rememberSnapFlingBehavior(lazyListState = ftInState, snapPosition = SnapPosition.Start)
+    val snapBehaviorCm =
+        rememberSnapFlingBehavior(lazyListState = cmState, snapPosition = SnapPosition.Start)
+
+    LaunchedEffect(selectedIndex, selectedCm, selectedFeet, selectedInches) {
+        if (selectedIndex == 0) {
+            val pair = uniqueHeights[ftInState.firstVisibleItemIndex]
+            updateFromFtIn(pair.first, pair.second)
+            val targetIdx = cmValues.indexOfFirst { it >= selectedCm }.coerceAtLeast(0)
+
+            cmState.scrollToItem(targetIdx)
+        } else {
+            // Moving from CM to Ft/In
+            val currentCm = cmValues[cmState.firstVisibleItemIndex]
+            updateFromCm(currentCm.toDouble())
+            val targetIdx = uniqueHeights.indexOfFirst { it.first == selectedFeet && it.second == selectedInches }.coerceAtLeast(0)
+            ftInState.scrollToItem(targetIdx)
+        }
+    }
 
 
     Dialog(onDismissRequest = { onDismissRequest() }) {
         Column(
             modifier = Modifier
-                .width(328.dp)
-                .height(418.dp).clip(
+                .widthIn(328.dp)
+                .heightIn(418.dp).clip(
                     RoundedCornerShape(28.dp)
                 ).background(
                     color = BackgroundSecondary
                 )
-                .padding(24.dp),
 
-        ) {
-            Text(
-                text = "Height",
-                style = MaterialTheme.typography.title_Medium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Used to calculate distance",
-                style = MaterialTheme.typography.bodyMediumRegular,
-                color = TextSecondary
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-            SingleChoiceSegmentedButton(
-                selectedIndex = selectedIndex,
-                onSelectionChange = { onUnitChange(it) },
-                options =  listOf("cm", "ft/in")
-            )
-            Spacer(modifier = Modifier.height(16.dp))
 
-                LazyColumn(
-                    state = listState,
-                    modifier = Modifier.fillMaxWidth().height(176.dp)
-                ) {
-                    if(selectedIndex == 0){
+            ) {
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(24.dp),
+            ) {
+                Text(
+                    text = "Height",
+                    style = MaterialTheme.typography.title_Medium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Used to calculate distance",
+                    style = MaterialTheme.typography.bodyMediumRegular,
+                    color = TextSecondary
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+                SingleChoiceSegmentedButton(
+                    selectedIndex = selectedIndex,
+                    onSelectionChange = { onUnitChange(it) },
+                    options = listOf("cm", "ft/in")
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+            Box(
+                modifier = Modifier.fillMaxWidth().height(176.dp),
+            ) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth().padding(top = 88.dp).height(44.dp),
+                    color = BackgroundTertiary
+                ) {}
+                if (selectedIndex == 0) {
+                    LazyColumn(
+                        state = cmState,
+                        flingBehavior = snapBehaviorCm,
+                        contentPadding = PaddingValues(top = 88.dp, bottom = 44.dp),
+                        modifier = Modifier.fillMaxSize()
+                    ) {
                         items(cmValues) { number ->
-                            val isSelected = selectedCm == number.toDouble()
-                            Row (
-                                modifier = Modifier.fillMaxWidth().height(48.dp).background(
-                                    color = if( isSelected) BackgroundTertiary else Color.Transparent
-                                ),
+                            val isSelected = cmValues[cmState.firstVisibleItemIndex] == number
+                            Row(
+                                modifier = Modifier.fillMaxWidth().height(44.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.Center
 
 
-                            ){
+                            ) {
                                 Text(
                                     text = number.toString(),
                                     textAlign = TextAlign.Center,
                                     style = MaterialTheme.typography.title_Medium,
-                                    color = if(isSelected) MaterialTheme.colorScheme.onSurface else TextSecondary,
-                                    modifier = Modifier.clickable{
-                                        updateFromCm(number.toDouble())
-                                    }
+                                    color = if (isSelected) MaterialTheme.colorScheme.onSurface else TextSecondary,
                                 )
                             }
 
                         }
-                    }else{
-                        items(uniqueHeights) { pair->
+                    }
+
+                } else {
+                    LazyColumn(
+                        state = ftInState,
+                        flingBehavior = snapBehaviorFtIn,
+                        contentPadding = PaddingValues(top = 88.dp, bottom = 44.dp),
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        items(uniqueHeights) { pair ->
                             val (feet, inches) = pair
-                            val isSelected = selectedFeet == feet && selectedInches == inches
+                            val isSelected = uniqueHeights[ftInState.firstVisibleItemIndex] == pair
 
                             Row(
-                                modifier = Modifier.fillMaxWidth().height(48.dp ).background(
-                                    color = if(  isSelected) BackgroundTertiary else Color.Transparent
-                                ).clickable{
-                                    updateFromFtIn(feet, inches)
-                                },
+                                modifier = Modifier.fillMaxWidth().height(44.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.Center
                             ) {
@@ -208,17 +245,17 @@ fun HeightPickerDialog(
                                     text = "${feet}",
                                     textAlign = TextAlign.Center,
                                     style = MaterialTheme.typography.title_Medium,
-                                    color = if(isSelected)MaterialTheme.colorScheme.onSurface else TextSecondary,
+                                    color = if (isSelected) MaterialTheme.colorScheme.onSurface else TextSecondary,
                                 )
                                 Spacer(modifier = Modifier.width(70.dp))
-                                if(isSelected){
+                                if (isSelected) {
                                     Text(
                                         text = "ft",
                                         textAlign = TextAlign.Center,
                                         style = MaterialTheme.typography.title_Medium,
                                         color = MaterialTheme.colorScheme.onSurface,
                                     )
-                                }else{
+                                } else {
                                     Text(
                                         text = "ft",
                                         textAlign = TextAlign.Center,
@@ -232,17 +269,17 @@ fun HeightPickerDialog(
                                     text = "${inches}",
                                     textAlign = TextAlign.Center,
                                     style = MaterialTheme.typography.title_Medium,
-                                    color = if(isSelected)MaterialTheme.colorScheme.onSurface else TextSecondary,
+                                    color = if (isSelected) MaterialTheme.colorScheme.onSurface else TextSecondary,
                                 )
                                 Spacer(modifier = Modifier.width(70.dp))
-                                if(isSelected ){
+                                if (isSelected) {
                                     Text(
                                         text = "in",
                                         textAlign = TextAlign.Center,
                                         style = MaterialTheme.typography.title_Medium,
                                         color = MaterialTheme.colorScheme.onSurface,
                                     )
-                                }else{
+                                } else {
                                     Text(
                                         text = "in",
                                         textAlign = TextAlign.Center,
@@ -254,49 +291,59 @@ fun HeightPickerDialog(
                             }
 
                         }
-
                     }
 
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ){
-                    TextButton(
-                        modifier = Modifier.wrapContentSize(),
-                        onClick = onCancel
-
-                    ) {
-                        Text(
-                            text = "Cancel",
-                            style = MaterialTheme.typography.bodyLargeMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(4.dp))
-                    TextButton(
-                        modifier = Modifier.width(54.dp).height(44.dp),
-                        onClick = {
-
-                            onOk(selectedCm, selectedIndex)
-                        }
-
-                    ) {
-                        Text(
-                            text = "Ok",
-                            style = MaterialTheme.typography.bodyLargeMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
             }
 
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp , end= 24.dp),
+                horizontalArrangement = Arrangement.End
+            ) {
+                TextButton(
+                    modifier = Modifier.wrapContentSize(),
+                    onClick = onCancel
+
+                ) {
+                    Text(
+                        text = "Cancel",
+                        style = MaterialTheme.typography.bodyLargeMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+                TextButton(
+                    modifier = Modifier.width(54.dp).height(44.dp),
+                    onClick = {
+                        val finalCm = if (selectedIndex == 0) {
+                            cmValues[cmState.firstVisibleItemIndex].toDouble()
+                        } else {
+                            val pair = uniqueHeights[ftInState.firstVisibleItemIndex]
+                            round((pair.first * 12 + pair.second) * 2.54)
+                        }
+                        Timber.i("Final cm: $finalCm" + "$selectedIndex")
+                        onOk(finalCm, selectedIndex)
+                    }
+
+                ) {
+                    Text(
+                        text = "Ok",
+                        style = MaterialTheme.typography.bodyLargeMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
         }
+
     }
+}
+
+
 
 @Composable
 fun SingleChoiceSegmentedButton(modifier: Modifier = Modifier,
