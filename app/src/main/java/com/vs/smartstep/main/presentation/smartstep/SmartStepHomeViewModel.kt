@@ -262,6 +262,22 @@ class SmartStepHomeViewModel(
                     )
                 }
             }
+
+            SmartStepHomeAction.onDismissBackgroundAccess -> {
+                _state.update {
+                    it.copy(
+                        showBackgroundRationale = false
+                    )
+                }
+            }
+
+            SmartStepHomeAction.dismissOpenApp -> {
+                _state.update {
+                    it.copy(
+                        openSettings = false
+                    )
+                }
+            }
         }
     }
 

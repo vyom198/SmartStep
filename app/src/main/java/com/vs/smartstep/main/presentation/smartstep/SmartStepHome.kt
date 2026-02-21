@@ -48,6 +48,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
@@ -55,6 +57,7 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vs.smartstep.R
 import com.vs.smartstep.core.theme.BackgroundWhite20
+import com.vs.smartstep.core.theme.SmartStepTheme
 import com.vs.smartstep.core.theme.bodyLargeMedium
 import com.vs.smartstep.core.theme.segmentedText
 import com.vs.smartstep.core.theme.title_Accent
@@ -179,9 +182,11 @@ fun SmartStepHomeScreen(
     ) {
 
         Scaffold(
-            modifier = Modifier.fillMaxSize().background(
-                color = MaterialTheme.colorScheme.background
-            ),
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    color = MaterialTheme.colorScheme.background
+                ),
             topBar = {
                 CenterAlignedTopAppBar(
                     title = {
@@ -200,13 +205,15 @@ fun SmartStepHomeScreen(
                             painter = painterResource(R.drawable.menu_burger_square_1),
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.size(34.dp).clickable {
-                                scope.launch {
-                                    drawerState.apply {
-                                        if (isClosed) open() else close()
+                            modifier = Modifier
+                                .size(34.dp)
+                                .clickable {
+                                    scope.launch {
+                                        drawerState.apply {
+                                            if (isClosed) open() else close()
+                                        }
                                     }
                                 }
-                            }
                         )
                     }
                 )
@@ -215,31 +222,39 @@ fun SmartStepHomeScreen(
         ) { paddingValues ->
 
             Column(
-                modifier = Modifier.fillMaxSize().padding(paddingValues),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
                 horizontalAlignment = Alignment.CenterHorizontally
 
             ) {
                 Spacer(modifier = Modifier.weight(1f))
                 Card(
-                    modifier = Modifier.width(380.dp).height(208.dp),
+                    modifier = Modifier
+                        .width(380.dp)
+                        .height(208.dp),
                     shape = RoundedCornerShape(24.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.primary
                     )
                 ) {
                     Column(
-                        modifier = Modifier.fillMaxSize().padding(
-                            16.dp
-                        ),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(
+                                16.dp
+                            ),
 
 
                         ) {
                         IconButton(
                             onClick = { },
-                            modifier = Modifier.size(38.dp).background(
-                                color = BackgroundWhite20,
-                                shape = RoundedCornerShape(8.dp)
-                            ),
+                            modifier = Modifier
+                                .size(38.dp)
+                                .background(
+                                    color = BackgroundWhite20,
+                                    shape = RoundedCornerShape(8.dp)
+                                ),
                             shape = RoundedCornerShape(8.dp),
                         ) {
                             Icon(
@@ -262,24 +277,33 @@ fun SmartStepHomeScreen(
                         )
                         Spacer(modifier = Modifier.height(10.dp))
                         Row(
-                            modifier = Modifier.fillMaxWidth().height(
-                                12.dp
-                            ).clip(
-                                RoundedCornerShape(99)
-                            ).background(
-                                BackgroundWhite20
-                            ).padding(horizontal = 1.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(
+                                    12.dp
+                                )
+                                .clip(
+                                    RoundedCornerShape(99)
+                                )
+                                .background(
+                                    BackgroundWhite20
+                                )
+                                .padding(horizontal = 1.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
 
                             Box(
-                                modifier = Modifier.fillMaxWidth(state.progress).height(
-                                    8.dp
-                                ).clip(
-                                    RoundedCornerShape(99)
-                                ).background(
-                                    Color.White
-                                )
+                                modifier = Modifier
+                                    .fillMaxWidth(state.progress)
+                                    .height(
+                                        8.dp
+                                    )
+                                    .clip(
+                                        RoundedCornerShape(99)
+                                    )
+                                    .background(
+                                        Color.White
+                                    )
                             )
 
                         }
@@ -290,12 +314,16 @@ fun SmartStepHomeScreen(
                 Spacer(modifier = Modifier.weight(1f))
 
             }
-            if (state.shouldShowAllow && show!! && state.count == 1) {
+                  //  && show!! && state.count == 1
+            if (state.shouldShowAllow) {
                 AllowAccessBottomS(
                     onClick = {
                         permissionLauncher.launch(
                             Manifest.permission.ACTIVITY_RECOGNITION
                         )
+                        onAction(SmartStepHomeAction.DismissDialog)
+                    },
+                    onDismiss = {
                         onAction(SmartStepHomeAction.DismissDialog)
                     }
 
@@ -305,6 +333,9 @@ fun SmartStepHomeScreen(
                 OpenAppBottomSheet(
                     onClick = {
                         onAction(SmartStepHomeAction.OpenAppSettings)
+                    },
+                    onDismissOpenApp = {
+                        onAction(SmartStepHomeAction.DismissDialog)
                     }
                 )
             }
@@ -314,7 +345,10 @@ fun SmartStepHomeScreen(
                     onClick = {
                         onAction(SmartStepHomeAction.onClickContinueBackground)
                     },
-                    sheetState = bottomSheetState
+                    sheetState = bottomSheetState,
+                    onDismissRequest = {
+                        onAction(SmartStepHomeAction.onDismissBackgroundAccess)
+                    }
                 )
             }
 
@@ -346,4 +380,20 @@ fun SmartStepHomeScreen(
 
 
 }
+
+
+//@Preview
+//@PreviewScreenSizes
+//@Composable
+//fun SmartStepHomeScreenPreview() {
+//    SmartStepTheme {
+//        SmartStepHomeScreen(
+//            state = SmartStepHomeState(
+//              stepGoalBS = true
+//            ),
+//            onAction = {},
+//            onNavigatetoProfileScreen = {}
+//        )
+//    }
+//}
 

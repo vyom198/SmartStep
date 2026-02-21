@@ -14,13 +14,15 @@ sealed interface SmartStepHomeAction {
     data object OnDisposed : SmartStepHomeAction
 
     data object stepGoalBottomSheet : SmartStepHomeAction
-
+    data object onDismissBackgroundAccess : SmartStepHomeAction
     data class saveStep(val steps : Int) : SmartStepHomeAction
 
     data object  startSensor : SmartStepHomeAction
 
     data object  onExitOrDismissClick : SmartStepHomeAction
     data object onExitConfirm : SmartStepHomeAction
+
+    data object dismissOpenApp : SmartStepHomeAction
 }
 
 
