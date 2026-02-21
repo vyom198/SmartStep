@@ -314,8 +314,8 @@ fun SmartStepHomeScreen(
                 Spacer(modifier = Modifier.weight(1f))
 
             }
-                  //  && show!! && state.count == 1
-            if (state.shouldShowAllow) {
+
+            if (state.shouldShowAllow  && show!! && state.count == 1) {
                 AllowAccessBottomS(
                     onClick = {
                         permissionLauncher.launch(
