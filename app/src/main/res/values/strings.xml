@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Smart Step</string>
+    <string name="background_access_helps_smart_step_track_compact">Background access helps Smart Step track \n your activity more reliably.</string>
+
 </resources>

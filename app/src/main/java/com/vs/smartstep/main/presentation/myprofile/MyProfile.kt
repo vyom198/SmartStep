@@ -47,12 +47,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vs.smartstep.R
 import com.vs.smartstep.core.theme.BackgroundSecondary
 import com.vs.smartstep.core.theme.BackgroundWhite
+import com.vs.smartstep.core.theme.SmartStepTheme
 import com.vs.smartstep.core.theme.StrokeMain
 import com.vs.smartstep.core.theme.TextSecondary
 import com.vs.smartstep.core.theme.TextWhite
@@ -166,8 +169,8 @@ fun MyProfileScreen(
             Spacer(modifier = Modifier.height(16.dp ))
             Column(
                 modifier = Modifier
-                    .widthIn(min = 380.dp)
-                    .heightIn(216.dp)
+                    .width(380.dp)
+                    .height(216.dp)
                     .clip(
                         RoundedCornerShape(14.dp)
                     )
@@ -426,7 +429,7 @@ fun MyProfileScreen(
             Spacer(modifier = Modifier.weight(1f))
             Button(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .widthIn(394.dp )
                     .height(44.dp),
                 onClick = {
                     onAction(MyProfileAction.onSave)
@@ -448,3 +451,5 @@ fun MyProfileScreen(
     }
 
 }
+
+
