@@ -7,6 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -28,7 +29,7 @@ class MyProfileViewModel(
         .onStart {
             if (!hasLoadedInitialData) {
                loadData()
-                fillData()
+
                 hasLoadedInitialData = true
             }
         }
@@ -40,13 +41,16 @@ class MyProfileViewModel(
 
     private fun loadData(){
         viewModelScope.launch {
-            userProfileStore.isProfileSetup().collect { bool ->
+           val bool =  userProfileStore.isProfileSetup().first()
                 _state.update {
                     it.copy(
                         dataNotNull = bool
 
                     )
                 }
+
+            if(_state.value.dataNotNull){
+                fillData()
             }
         }
     }

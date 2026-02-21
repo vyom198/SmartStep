@@ -283,7 +283,7 @@ class SmartStepHomeViewModel(
 
     private fun openBackgroundDialog() {
         isIgnoringBatteryOptimizations(context)
-        if(_state.value.isIgnoringBatteryOpti) {
+        if(!_state.value.isIgnoringBatteryOpti) {
             viewModelScope.launch {
                 if (!userProfileStore.getIsbackgroundAsked()) {
                     _state.update {

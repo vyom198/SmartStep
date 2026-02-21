@@ -169,8 +169,8 @@ fun MyProfileScreen(
             Spacer(modifier = Modifier.height(16.dp ))
             Column(
                 modifier = Modifier
-                    .width(380.dp)
-                    .height(216.dp)
+                    .widthIn(380.dp)
+                    .heightIn(218.dp)
                     .clip(
                         RoundedCornerShape(14.dp)
                     )
@@ -286,7 +286,7 @@ fun MyProfileScreen(
                                 },
                                 text = {
                                     Text(
-                                        text = item,
+                                        text = item ,
                                         style = MaterialTheme.typography.bodyLargeRegular,
                                         color = MaterialTheme.colorScheme.onSurface
                                     )
@@ -429,7 +429,7 @@ fun MyProfileScreen(
             Spacer(modifier = Modifier.weight(1f))
             Button(
                 modifier = Modifier
-                    .widthIn(394.dp )
+                    .width(394.dp )
                     .height(44.dp),
                 onClick = {
                     onAction(MyProfileAction.onSave)
