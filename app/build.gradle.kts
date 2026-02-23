@@ -2,9 +2,13 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.room)
     alias(libs.plugins.jetbrains.kotlin.serialization)
 }
-
+room {
+    schemaDirectory("$projectDir/schemas")
+}
 android {
     namespace = "com.vs.smartstep"
     compileSdk = 36
@@ -83,7 +87,9 @@ dependencies {
 
     implementation(libs.androidx.datastore.preferences.z)
 
-
+    implementation(libs.room.ktx)
+    implementation(libs.room.runtime)
+    ksp(libs.room.compiler)
 
         // For calculating screen size classes (Compact, Medium, Expanded)
         implementation("androidx.compose.material3:material3-window-size-class")

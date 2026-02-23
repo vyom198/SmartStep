@@ -68,6 +68,7 @@ import com.vs.smartstep.main.presentation.smartstep.components.AllowBackgroundBo
 import com.vs.smartstep.main.presentation.smartstep.components.ExitDialog
 import com.vs.smartstep.main.presentation.smartstep.components.OpenAppBottomSheet
 import com.vs.smartstep.main.presentation.smartstep.components.SmartStepDrawerSheet
+import com.vs.smartstep.main.presentation.smartstep.components.StepEditingDialog
 import com.vs.smartstep.main.presentation.smartstep.components.StepGoalBottomSheet
 import com.vs.smartstep.main.presentation.util.toCommaString
 import kotlinx.coroutines.launch
@@ -176,6 +177,12 @@ fun SmartStepHomeScreen(
                 onClickPersonalSettings = onNavigatetoProfileScreen,
                 onClickExit = {
                    onAction(SmartStepHomeAction.onExitOrDismissClick)
+                },
+                onEditSteps = {
+                    onAction(SmartStepHomeAction.isEditingDialog)
+                },
+                onResetSteps ={
+
                 }
             )
         },
@@ -371,6 +378,17 @@ fun SmartStepHomeScreen(
                     },
                     onConfirm = {
                         onAction(SmartStepHomeAction.onExitConfirm)
+                    }
+                )
+            }
+
+            if(state.isEditingSteps){
+                StepEditingDialog(
+                    onDismiss = {
+                        onAction(SmartStepHomeAction.isEditingDialog)
+                    },
+                    onConfirm = {
+
                     }
                 )
             }
