@@ -8,9 +8,11 @@ import android.net.Uri
 import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
+import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.vs.smartstep.core.room.DailyStepDao
 import com.vs.smartstep.main.domain.StepProvider
 import com.vs.smartstep.main.domain.userProfileStore
 import kotlinx.coroutines.Dispatchers
@@ -18,6 +20,8 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onStart
@@ -27,11 +31,13 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import java.time.LocalDate
 
 class SmartStepHomeViewModel(
     private val context: Context,
     private val userProfileStore: userProfileStore,
-    private val stepProvider: StepProvider
+    private val stepProvider: StepProvider,
+    private val dao: DailyStepDao
 ) : ViewModel() {
 
     private val eventChannel = Channel<SmartStepHomeEvent>()
@@ -55,12 +61,20 @@ class SmartStepHomeViewModel(
 
     private fun loadSteps(){
         viewModelScope.launch {
-            stepProvider.steps.collect { steps->
-                _state.update {
-                    it.copy(
-                        stepCount = steps
-                    )
+            combine(
+                stepProvider.steps,
+                userProfileStore.baselineFlow,
+                userProfileStore.manualStepsFlow
+            ) { sensorValue, baseline, manualSteps ->
+                if (manualSteps >= 0) {
+                    manualSteps + maxOf(0, sensorValue - baseline)
+                } else {
+                    maxOf(0, sensorValue - baseline)
                 }
+            }.collect { dailySteps ->
+                _state.update { it.copy(
+                    stepCount = dailySteps
+                ) }
             }
         }
     }
@@ -275,6 +289,14 @@ class SmartStepHomeViewModel(
                 _state.update {
                     it.copy(
                         openSettings = false
+                    )
+                }
+            }
+
+            SmartStepHomeAction.isEditingDialog -> {
+                _state.update {
+                    it.copy(
+                        isEditingSteps = !it.isEditingSteps
                     )
                 }
             }

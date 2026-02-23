@@ -23,6 +23,9 @@ sealed interface SmartStepHomeAction {
     data object onExitConfirm : SmartStepHomeAction
 
     data object dismissOpenApp : SmartStepHomeAction
+
+
+    data object  isEditingDialog : SmartStepHomeAction
 }
 
 

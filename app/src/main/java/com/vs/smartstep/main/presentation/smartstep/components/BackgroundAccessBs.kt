@@ -106,12 +106,7 @@ fun AllowBackgroundBottomSheet(
 
 }
 
-@Composable
-fun AllowBgContentCompact(onClick: () -> Unit,
 
-) {
-
-}
 
 @Composable
 fun AllowBgContentNotCompact(

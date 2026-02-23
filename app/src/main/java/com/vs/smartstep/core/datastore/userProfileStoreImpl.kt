@@ -30,7 +30,8 @@ class userProfileStoreImpl(
         val PermissionCount = intPreferencesKey("permission_count")
 
         val STEP_GOAL  = intPreferencesKey("step_goal")
-
+        val BASELINE  = intPreferencesKey("baseline")
+        val MANUAL_STEPS = intPreferencesKey("manual_steps")
     }
 
 
@@ -116,6 +117,23 @@ class userProfileStoreImpl(
         }
 
     }
+    override suspend fun saveBaseline(sensorValue: Int) {
+        dataStore.edit {
+            it[Keys.BASELINE] = sensorValue
+        }
+    }
 
+    override val baselineFlow: Flow<Int> =  dataStore.data.map {
+        it[Keys.BASELINE] ?: 0
+    }
 
+    override suspend fun saveManualEdit(manualSteps: Int) {
+        dataStore.edit {
+            it[Keys.MANUAL_STEPS] = manualSteps
+        }
+    }
+
+    override val manualStepsFlow: Flow<Int> =  dataStore.data.map {
+        it[Keys.MANUAL_STEPS] ?: 0
+    }
 }

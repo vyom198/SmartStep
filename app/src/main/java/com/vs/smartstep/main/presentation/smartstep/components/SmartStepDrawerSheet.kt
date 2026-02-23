@@ -23,6 +23,8 @@ fun SmartStepDrawerSheet(
     onClickStepGoal : () -> Unit,
     onClickPersonalSettings : () -> Unit,
     onClickExit : () -> Unit,
+    onEditSteps : () -> Unit,
+    onResetSteps : () -> Unit
 
 ) {
     ModalDrawerSheet(
@@ -76,6 +78,36 @@ fun SmartStepDrawerSheet(
                 },
                 selected = false,
                 onClick = onClickPersonalSettings
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            HorizontalDivider()
+            Spacer(modifier = Modifier.height(12.dp))
+            NavigationDrawerItem(
+
+                label = {
+                    Text(
+                        text = "Edit Steps",
+                        style = MaterialTheme.typography.bodyLargeMedium,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                },
+                selected = false,
+                onClick = onEditSteps
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            HorizontalDivider()
+            Spacer(modifier = Modifier.height(12.dp))
+            NavigationDrawerItem(
+
+                label = {
+                    Text(
+                        text = "Reset Today's Steps",
+                        style = MaterialTheme.typography.bodyLargeMedium,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                },
+                selected = false,
+                onClick = onResetSteps
             )
             Spacer(modifier = Modifier.height(12.dp))
             HorizontalDivider()
