@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.vs.smartstep.main.domain.userProfileStore
 import kotlinx.coroutines.flow.Flow
@@ -12,7 +13,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 class userProfileStoreImpl(
-    private val dataStore: DataStore<Preferences>
+    private val dataStore: DataStore<Preferences>,
 ) : userProfileStore {
     private object Keys{
         val GENDER = stringPreferencesKey("gender")
@@ -32,6 +33,8 @@ class userProfileStoreImpl(
         val STEP_GOAL  = intPreferencesKey("step_goal")
         val BASELINE  = intPreferencesKey("baseline")
         val MANUAL_STEPS = intPreferencesKey("manual_steps")
+
+        val TIMEPAST = longPreferencesKey("time_past")
     }
 
 
@@ -52,6 +55,12 @@ class userProfileStoreImpl(
         val unit = preferences[Keys.HEIGHT_UNIT] ?: 0
         val value = preferences[Keys.HEIGHT_VALUE] ?: 0
         return Pair(unit, value)
+    }
+
+    override fun isMetric(): Flow<Boolean> {
+        return dataStore.data.map { preferences ->
+            preferences[Keys.HEIGHT_UNIT] == 0
+        }
     }
 
     override suspend fun saveWeightWithUnit(unit: Int, weight: Int) {
@@ -131,6 +140,23 @@ class userProfileStoreImpl(
         dataStore.edit {
             it[Keys.MANUAL_STEPS] = manualSteps
         }
+    }
+
+    override suspend fun addTime(time: Long) {
+        dataStore.edit {
+            val current = it[Keys.TIMEPAST] ?: 0
+            it[Keys.TIMEPAST] = current + time
+        }
+    }
+
+    override suspend fun resetTime() {
+        dataStore.edit {
+            it[Keys.TIMEPAST] = 0
+        }
+    }
+
+    override val totalTime: Flow<Long> = dataStore.data.map {
+        it[Keys.TIMEPAST] ?: 0
     }
 
     override val manualStepsFlow: Flow<Int> =  dataStore.data.map {

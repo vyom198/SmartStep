@@ -19,6 +19,9 @@ import com.vs.smartstep.core.room.*
 import com.vs.smartstep.core.room.DailyStepDao
 import com.vs.smartstep.main.domain.StepProvider
 import com.vs.smartstep.main.domain.userProfileStore
+import com.vs.smartstep.main.presentation.util.calculateCalories
+import com.vs.smartstep.main.presentation.util.calculateDistance
+import com.vs.smartstep.main.presentation.util.getTodayDate
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -45,6 +48,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Locale
+import kotlin.math.abs
 
 class SmartStepHomeViewModel(
     private val context: Context,
@@ -52,19 +56,9 @@ class SmartStepHomeViewModel(
     private val stepProvider: StepProvider,
     private val dao: DailyStepDao
 ) : ViewModel() {
-    val dateFormatter = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        DateTimeFormatter.ofPattern("yyyy/MM/dd")
-    } else {
-        null
-    }
-    private val todayDate by if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        mutableStateOf(LocalDate.now().format(dateFormatter))
-    } else {
-        val calendar = Calendar.getInstance()
-        val legacyFormat = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault())
-        mutableStateOf(legacyFormat.format(calendar.time))
-    }
 
+    private val todayDate = getTodayDate()
+    var lastProcessedSteps = 0
     private val eventChannel = Channel<SmartStepHomeEvent>()
     val events = eventChannel.receiveAsFlow()
     private val _state = MutableStateFlow(SmartStepHomeState())
@@ -75,6 +69,9 @@ class SmartStepHomeViewModel(
             isIgnoringBatteryOptimizations(context)
             checkActivityPermission()
             loadSteps()
+            loadCalories()
+            UpdateSteps()
+            loadMetrics()
             loadStepsGoal()
 
         }
@@ -84,35 +81,151 @@ class SmartStepHomeViewModel(
             initialValue = SmartStepHomeState()
         )
 
-    private fun loadSteps(){
+    private fun loadMetrics() {
         viewModelScope.launch {
+            userProfileStore.totalTime.collect { time ->
+                val min = (time / 1000 / 60).toInt()
+                _state.update {
+                    it.copy(
+                        totalTime = min
+                    )
+                }
+            }
+
+
+
+        }
+        viewModelScope.launch {
+            userProfileStore.isMetric().collect { bool ->
+                Timber.i("isMetric : $bool")
+                _state.update {
+                    it.copy(
+                        isMetric = bool
+                    )
+                }
+            }
+        }
+    }
+
+    private fun UpdateSteps() {
+        viewModelScope.launch(Dispatchers.Default) {
+
             combine(
                 stepProvider.steps,
                 userProfileStore.baselineFlow,
                 userProfileStore.manualStepsFlow
             ) { sensorValue, baseline, manualSteps ->
                 Timber.d("Combine triggered - sensor: $sensorValue, baseline: $baseline, manual: $manualSteps")
-
-                val result = if (manualSteps > 0) {
-                    manualSteps + maxOf(0, sensorValue - baseline)
-                } else {
-                    maxOf(0, sensorValue - baseline)
+                val dailySteps =  if(sensorValue > 0 ) {
+                   if (manualSteps > 0) {
+                        manualSteps + abs(sensorValue - baseline)
+                    } else {
+                        abs(sensorValue - baseline)
+                    }
+                }else{
+                     dao.getDailyStepByDate(todayDate)?.steps ?: 0
+                }
+                val activity = dao.getDailyStepByDate(todayDate)
+                if (activity != null){
+                    dao.insertDailyStep(
+                        activity.copy(
+                            steps = dailySteps,
+                            baseline =  0
+                        )
+                    )
+                }else{
+                    dao.insertDailyStep(
+                        DailyStep(
+                            date = todayDate,
+                            steps = dailySteps,
+                            stepGoal = _state.value.dailyGoal,
+                            baseline = 0
+                        ))
                 }
 
-                result
+                val stepDifference = dailySteps - lastProcessedSteps
+                val shouldUpdate = when {
+                    stepDifference >= 10 -> true
+                    manualSteps > 0 -> true
+                    else -> false
+                }
+                Pair(dailySteps, shouldUpdate )
+            }.flowOn(Dispatchers.Default)
+                .collect { (dailySteps, shouldUpdate) ->
+
+                    if (shouldUpdate) {
+                        withContext(Dispatchers.Default) {
+                            val distance = calculateDistance(
+                                steps = dailySteps,
+                                heightCm = userProfileStore.getHeightWithUnit().second.toDouble(),
+                                Unit = userProfileStore.getWeightWithUnit().first
+                            )
+                            val kcal = calculateCalories(
+                                dailySteps,
+                                userProfileStore.getWeightWithUnit().second,
+                                gender = userProfileStore.getGender(),
+                                userProfileStore.getWeightWithUnit().first
+                            )
+
+                            withContext(Dispatchers.Main) {
+                                _state.update {
+                                    it.copy(
+                                        distanceTravelled = distance,
+                                        kcalorie = kcal
+                                    )
+                                }
+                            }
+                        }
+                        lastProcessedSteps = dailySteps
+                    }
+
+                }
+        }
+
+
+
+    }
+    private fun loadCalories(){
+        viewModelScope.launch {
+            withContext(Dispatchers.Default) {
+                val distance = calculateDistance(
+                    steps = _state.value.stepCount,
+                    heightCm = userProfileStore.getHeightWithUnit().second.toDouble(),
+                    Unit = userProfileStore.getWeightWithUnit().first
+                )
+                val kcal = calculateCalories(
+                    _state.value.stepCount,
+                    userProfileStore.getWeightWithUnit().second,
+                    gender = userProfileStore.getGender(),
+                    userProfileStore.getWeightWithUnit().first
+                )
+
+                withContext(Dispatchers.Main) {
+                    _state.update {
+                        it.copy(
+                            distanceTravelled = distance,
+                            kcalorie = kcal
+                        )
+                    }
+                }
             }
-                .flowOn(Dispatchers.Default)
-                .collect { dailySteps ->
-                    Timber.d("Collecting daily steps: $dailySteps")
-                    _state.update { it.copy(stepCount = dailySteps) }
+        }
+    }
+    private fun loadSteps(){
+        viewModelScope.launch {
+            dao.getDailyStepByDateFlow(todayDate).collect { item ->
+                Timber.d("steps from room: ${item.steps}")
+                _state.update {
+                    it.copy(
+                        stepCount = item.steps
+                    )
                 }
+            }
         }
-
-        }
-
+    }
     private fun loadStepsGoal() {
         viewModelScope.launch {
-            userProfileStore.getStep().collect { step->
+            userProfileStore.getStep().collect { step ->
                 _state.update {
                     it.copy(
                         dailyGoal = step
@@ -122,6 +235,7 @@ class SmartStepHomeViewModel(
             }
         }
     }
+
     private fun checkActivityPermission() {
         viewModelScope.launch {
             userProfileStore.getPermissionCount().collect { count ->
@@ -145,7 +259,7 @@ class SmartStepHomeViewModel(
                         hasActivityPermission = hasPermission
                     )
                 }
-                Timber.i("has permission : ${hasPermission}" )
+                Timber.i("has permission : ${hasPermission}")
                 eventChannel.send(SmartStepHomeEvent.Granted(hasPermission))
 
             }
@@ -154,8 +268,8 @@ class SmartStepHomeViewModel(
 
     private fun isIgnoringBatteryOptimizations(context: Context) {
         viewModelScope.launch {
-        val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
-        val value =  powerManager.isIgnoringBatteryOptimizations(context.packageName)
+            val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+            val value = powerManager.isIgnoringBatteryOptimizations(context.packageName)
 
             _state.update {
                 it.copy(
@@ -185,7 +299,7 @@ class SmartStepHomeViewModel(
                             )
                         }
 
-                            openBackgroundDialog()
+                        openBackgroundDialog()
 
                     } else {
                         if (_state.value.count < 2) {
@@ -226,11 +340,11 @@ class SmartStepHomeViewModel(
             }
 
             SmartStepHomeAction.onHasActivityPermission -> {
-                    _state.update {
-                        it.copy(
-                            openSettings = false
-                        )
-                    }
+                _state.update {
+                    it.copy(
+                        openSettings = false
+                    )
+                }
                 openBackgroundDialog()
             }
 
@@ -270,15 +384,24 @@ class SmartStepHomeViewModel(
             is SmartStepHomeAction.saveStep -> {
                 viewModelScope.launch {
                     userProfileStore.saveStep(action.steps)
+                    if (_state.value.dailyGoal > 0) {
+                        stepProvider.startListening()
+                        _state.update {
+                            it.copy(
+                                playPause = true
+                            )
+                        }
+                    }
                     _state.update {
                         it.copy(
                             stepGoalBS = false
                         )
                     }
+
                 }
             }
 
-            SmartStepHomeAction.startSensor ->{
+            SmartStepHomeAction.startSensor -> {
                 viewModelScope.launch(Dispatchers.IO) {
                     stepProvider.startListening()
                 }
@@ -287,31 +410,33 @@ class SmartStepHomeViewModel(
 
             SmartStepHomeAction.onExitConfirm -> {
                 viewModelScope.launch {
-                 withContext(Dispatchers.Main) {
-                     _state.update {
-                         it.copy(
-                             exitDialog = false
-                         )
-                     }
-                 }
-                  withContext(Dispatchers.IO) {
-                      val job = async { stepProvider.stopListening() }
-                      job.await()
-                      dao.insertDailyStep(
-                          DailyStep(
-                              date = todayDate,
-                              steps = 0 ,
-                              stepGoal = _state.value.dailyGoal,
-                              baseline = 0
-                          )
-                      )
-                      userProfileStore.saveBaseline(stepProvider.steps.first())
-                      userProfileStore.saveManualEdit(0)
+                    withContext(Dispatchers.Main) {
+                        _state.update {
+                            it.copy(
+                                exitDialog = false
+                            )
+                        }
+                    }
+                    withContext(Dispatchers.IO) {
+                        val job = async { stepProvider.stopListening() }
+                        job.await()
+                        dao.insertDailyStep(
+                            DailyStep(
+                                date = todayDate,
+                                steps = 0,
+                                stepGoal = _state.value.dailyGoal,
+                                baseline = 0
+                            )
+                        )
+                        userProfileStore.saveBaseline(stepProvider.steps.first())
+                        userProfileStore.saveManualEdit(0)
+                        userProfileStore.resetTime()
 
-                  }
-                   eventChannel.send(SmartStepHomeEvent.TerminateApp)
+                    }
+                    eventChannel.send(SmartStepHomeEvent.TerminateApp)
                 }
             }
+
             SmartStepHomeAction.onExitOrDismissClick -> {
                 _state.update {
                     it.copy(
@@ -344,7 +469,7 @@ class SmartStepHomeViewModel(
                 }
             }
 
-            is SmartStepHomeAction.onSaveDate -> saveStepsOfSpecificDate(action.date , action.steps)
+            is SmartStepHomeAction.onSaveDate -> saveStepsOfSpecificDate(action.date, action.steps)
             SmartStepHomeAction.onResseting -> {
                 _state.update {
                     it.copy(
@@ -354,10 +479,25 @@ class SmartStepHomeViewModel(
             }
 
             SmartStepHomeAction.onResetConfirm -> resetSteps()
+            SmartStepHomeAction.onPlayPause -> {
+                viewModelScope.launch {
+                    if (_state.value.playPause) {
+                        stepProvider.stopListening()
+                    } else {
+                        stepProvider.startListening()
+                    }
+                }
+
+                _state.update {
+                    it.copy(
+                        playPause = !it.playPause
+                    )
+                }
+            }
         }
     }
 
-    private fun resetSteps(){
+    private fun resetSteps() {
         viewModelScope.launch {
             withContext(Dispatchers.Default) {
                 userProfileStore.saveBaseline(stepProvider.steps.first())
@@ -381,6 +521,7 @@ class SmartStepHomeViewModel(
 
 
                 }
+                userProfileStore.resetTime()
             }
             _state.update {
                 it.copy(
@@ -391,32 +532,32 @@ class SmartStepHomeViewModel(
         }
     }
 
-    private fun saveStepsOfSpecificDate(date: String, steps: Int){
+    private fun saveStepsOfSpecificDate(date: String, steps: Int) {
         viewModelScope.launch {
-         withContext(Dispatchers.IO) {
-             if (date == todayDate) {
-                 userProfileStore.saveManualEdit(steps)
-                 userProfileStore.saveBaseline(stepProvider.steps.first())
-                 dao.insertDailyStep(
-                     com.vs.smartstep.core.room.DailyStep(
-                         date = date,
-                         steps = _state.value.stepCount,
-                         stepGoal = _state.value.dailyGoal,
-                         baseline = 0
-                     )
-                 )
-             } else {
-                 dao.insertDailyStep(
-                     com.vs.smartstep.core.room.DailyStep(
-                         date = date,
-                         steps = steps,
-                         stepGoal = _state.value.dailyGoal,
-                         baseline = 0
-                     )
-                 )
+            withContext(Dispatchers.IO) {
+                if (date == todayDate) {
+                    userProfileStore.saveManualEdit(steps)
+                    userProfileStore.saveBaseline(stepProvider.steps.first())
+                    dao.insertDailyStep(
+                        com.vs.smartstep.core.room.DailyStep(
+                            date = date,
+                            steps = _state.value.stepCount,
+                            stepGoal = _state.value.dailyGoal,
+                            baseline = 0
+                        )
+                    )
+                } else {
+                    dao.insertDailyStep(
+                        com.vs.smartstep.core.room.DailyStep(
+                            date = date,
+                            steps = steps,
+                            stepGoal = _state.value.dailyGoal,
+                            baseline = 0
+                        )
+                    )
 
-             }
-         }
+                }
+            }
             _state.update {
                 it.copy(
                     isEditingSteps = false
@@ -428,7 +569,7 @@ class SmartStepHomeViewModel(
 
     private fun openBackgroundDialog() {
         isIgnoringBatteryOptimizations(context)
-        if(!_state.value.isIgnoringBatteryOpti) {
+        if (!_state.value.isIgnoringBatteryOpti) {
             viewModelScope.launch {
                 if (!userProfileStore.getIsbackgroundAsked()) {
                     _state.update {

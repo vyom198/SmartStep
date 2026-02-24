@@ -4,9 +4,9 @@ import kotlinx.coroutines.flow.Flow
 
 interface userProfileStore {
     suspend fun getWeightWithUnit() : Pair<Int , Int >
-   suspend fun getGender() : String
+     suspend fun getGender() : String
     suspend fun getHeightWithUnit() : Pair<Int , Int >
-
+    fun isMetric() : Flow<Boolean>
     suspend fun  saveWeightWithUnit (unit : Int , weight :Int)
     suspend fun  saveGender(gender : String )
     suspend fun  saveheightWithUnit ( unit : Int , height : Int)
@@ -24,4 +24,9 @@ interface userProfileStore {
     val manualStepsFlow: Flow<Int>
     suspend fun saveBaseline(sensorValue: Int)
     suspend fun saveManualEdit(manualSteps: Int)
+    suspend fun addTime(time : Long)
+     suspend fun resetTime ()
+    val totalTime : Flow<Long>
+
+
 }

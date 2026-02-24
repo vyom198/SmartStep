@@ -24,7 +24,7 @@ import androidx.compose.ui.window.Dialog
 import com.vs.smartstep.core.theme.BackgroundSecondary
 import com.vs.smartstep.core.theme.bodyLargeMedium
 import com.vs.smartstep.core.theme.bodyLargeRegular
-import com.vs.smartstep.core.theme.title_Medium
+
 
 @Composable
 fun ResettingDialog(
