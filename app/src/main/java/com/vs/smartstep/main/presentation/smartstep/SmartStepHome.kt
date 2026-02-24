@@ -18,7 +18,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -66,6 +70,7 @@ import com.vs.smartstep.main.presentation.components.ObserveAsEvents
 import com.vs.smartstep.main.presentation.smartstep.components.AllowAccessBottomS
 import com.vs.smartstep.main.presentation.smartstep.components.AllowBackgroundBottomSheet
 import com.vs.smartstep.main.presentation.smartstep.components.ExitDialog
+import com.vs.smartstep.main.presentation.smartstep.components.MetricsComp
 import com.vs.smartstep.main.presentation.smartstep.components.OpenAppBottomSheet
 import com.vs.smartstep.main.presentation.smartstep.components.ResettingDialog
 import com.vs.smartstep.main.presentation.smartstep.components.SmartStepDrawerSheet
@@ -142,13 +147,6 @@ fun SmartStepHomeScreen(
 
         onAction(SmartStepHomeAction.UpdatePermissionStatus(isGranted))
 
-    }
-    LaunchedEffect(
-        state.dailyGoal
-    ) {
-        if (state.dailyGoal > 0) {
-            onAction(SmartStepHomeAction.startSensor)
-        }
     }
     LaunchedEffect(Unit) {
         if(!state.hasActivityPermission && state.count < 2 ){
@@ -240,7 +238,7 @@ fun SmartStepHomeScreen(
                 Card(
                     modifier = Modifier
                         .width(380.dp)
-                        .height(208.dp),
+                        .height(318.dp),
                     shape = RoundedCornerShape(24.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.primary
@@ -255,31 +253,75 @@ fun SmartStepHomeScreen(
 
 
                         ) {
-                        IconButton(
-                            onClick = { },
-                            modifier = Modifier
-                                .size(38.dp)
-                                .background(
-                                    color = BackgroundWhite20,
-                                    shape = RoundedCornerShape(8.dp)
-                                ),
-                            shape = RoundedCornerShape(8.dp),
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.sneakers),
-                                contentDescription = null,
-                                tint = Color.White
-                            )
+
+                        Row {
+                            IconButton(
+                                onClick = { },
+                                modifier = Modifier
+                                    .size(38.dp)
+                                    .background(
+                                        color = BackgroundWhite20,
+                                        shape = RoundedCornerShape(8.dp)
+                                    ),
+                                shape = RoundedCornerShape(8.dp),
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.sneakers),
+                                    contentDescription = null,
+                                    tint = Color.White
+                                )
+                            }
+                            Spacer(modifier = Modifier.weight(1f))
+                            IconButton(
+                                onClick = {
+                                    onAction(SmartStepHomeAction.isEditingDialog)
+                                },
+                                modifier = Modifier
+                                    .size(38.dp)
+                                    .background(
+                                        color = BackgroundWhite20,
+                                        shape = CircleShape
+                                    ),
+                                shape = CircleShape,
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.pen_edit_2),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp),
+                                    tint = Color.White
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(16.dp))
+                            IconButton(
+                                onClick = {
+                                    onAction(SmartStepHomeAction.onPlayPause)
+                                },
+                                modifier = Modifier
+                                    .size(38.dp)
+                                    .background(
+                                        color = BackgroundWhite20,
+                                        shape = CircleShape
+                                    ),
+                                shape = CircleShape
+                            ) {
+                                Icon(
+                                    painter = painterResource(if(state.playPause) R.drawable.pause else R.drawable.play) ,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp),
+                                    tint = Color.White
+                                )
+                            }
                         }
+
 
                         Spacer(modifier = Modifier.height(10.dp))
                         Text(
                             text = state.stepCount.toCommaString(),
-                            style = MaterialTheme.typography.title_Accent,
-                            color = Color.White
+                            style =  MaterialTheme.typography.title_Accent,
+                            color = if(state.playPause) Color.White else BackgroundWhite20
                         )
                         Text(
-                            text = "/${state.dailyGoal} Steps",
+                            text = if(!state.playPause)"Paused" else "/${state.dailyGoal} Steps",
                             style = MaterialTheme.typography.title_Medium,
                             color = Color.White.copy(alpha = 0.9f)
                         )
@@ -315,6 +357,12 @@ fun SmartStepHomeScreen(
                             )
 
                         }
+                        Spacer(modifier = Modifier.height(20.dp))
+                        MetricsComp(time= state.totalTime,
+                            kcal = state.kcalorie,
+                            distance = state.distanceTravelled,
+                            isMetric = state.isMetric,
+                        )
                     }
 
 
@@ -412,18 +460,5 @@ fun SmartStepHomeScreen(
 }
 
 
-//@Preview
-//@PreviewScreenSizes
-//@Composable
-//fun SmartStepHomeScreenPreview() {
-//    SmartStepTheme {
-//        SmartStepHomeScreen(
-//            state = SmartStepHomeState(
-//              stepGoalBS = true
-//            ),
-//            onAction = {},
-//            onNavigatetoProfileScreen = {}
-//        )
-//    }
-//}
+
 
