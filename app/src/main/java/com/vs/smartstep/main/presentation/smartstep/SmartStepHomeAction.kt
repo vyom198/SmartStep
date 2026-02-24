@@ -26,6 +26,12 @@ sealed interface SmartStepHomeAction {
 
 
     data object  isEditingDialog : SmartStepHomeAction
+
+    data object onResseting : SmartStepHomeAction
+
+    data object onResetConfirm : SmartStepHomeAction
+
+    data class onSaveDate ( val date : String , val steps : Int) : SmartStepHomeAction
 }
 
 

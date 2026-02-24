@@ -12,11 +12,12 @@ interface DailyStepDao {
     fun getLast7DaysAscending(): Flow<List<DailyStep>>
 
     @Query("SELECT * FROM daily_steps WHERE date = :date")
-    fun getDailyStepByDate(date: String): Flow<DailyStep>
+    fun getDailyStepByDateFlow(date: String): Flow<DailyStep>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertDailyStep(dailyStep: DailyStep)
-
+    @Query("SELECT * FROM daily_steps WHERE date = :date")
+    suspend fun getDailyStepByDate(date: String): DailyStep?
 
 
 

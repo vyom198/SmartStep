@@ -37,7 +37,7 @@ class StepDetector(context: Context) : StepProvider, SensorEventListener {
             
             // Update the flow value
             _steps.value = totalStepsSinceBoot
-            
+
             Timber.i("Step update emitted: $totalStepsSinceBoot")
         }
     }

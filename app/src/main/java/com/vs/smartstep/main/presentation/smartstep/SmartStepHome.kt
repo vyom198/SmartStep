@@ -67,6 +67,7 @@ import com.vs.smartstep.main.presentation.smartstep.components.AllowAccessBottom
 import com.vs.smartstep.main.presentation.smartstep.components.AllowBackgroundBottomSheet
 import com.vs.smartstep.main.presentation.smartstep.components.ExitDialog
 import com.vs.smartstep.main.presentation.smartstep.components.OpenAppBottomSheet
+import com.vs.smartstep.main.presentation.smartstep.components.ResettingDialog
 import com.vs.smartstep.main.presentation.smartstep.components.SmartStepDrawerSheet
 import com.vs.smartstep.main.presentation.smartstep.components.StepEditingDialog
 import com.vs.smartstep.main.presentation.smartstep.components.StepGoalBottomSheet
@@ -182,7 +183,7 @@ fun SmartStepHomeScreen(
                     onAction(SmartStepHomeAction.isEditingDialog)
                 },
                 onResetSteps ={
-
+                    onAction(SmartStepHomeAction.onResseting)
                 }
             )
         },
@@ -387,8 +388,19 @@ fun SmartStepHomeScreen(
                     onDismiss = {
                         onAction(SmartStepHomeAction.isEditingDialog)
                     },
-                    onConfirm = {
+                    onClickSave = { date , steps ->
+                      onAction(SmartStepHomeAction.onSaveDate(date , steps))
+                    }
+                )
+            }
 
+            if(state.isReseting){
+                ResettingDialog(
+                    onDismiss = {
+                        onAction(SmartStepHomeAction.onResseting)
+                    },
+                    onConfirm = {
+                        onAction(SmartStepHomeAction.onResetConfirm)
                     }
                 )
             }
