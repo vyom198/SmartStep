@@ -9,21 +9,30 @@ import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
 import androidx.annotation.RequiresApi
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.retain.LocalRetainedValuesStoreProvider
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.vs.smartstep.core.room.*
 import com.vs.smartstep.core.room.DailyStepDao
 import com.vs.smartstep.main.domain.StepProvider
 import com.vs.smartstep.main.domain.userProfileStore
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
@@ -31,7 +40,11 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import java.text.SimpleDateFormat
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Calendar
+import java.util.Locale
 
 class SmartStepHomeViewModel(
     private val context: Context,
@@ -39,6 +52,18 @@ class SmartStepHomeViewModel(
     private val stepProvider: StepProvider,
     private val dao: DailyStepDao
 ) : ViewModel() {
+    val dateFormatter = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        DateTimeFormatter.ofPattern("yyyy/MM/dd")
+    } else {
+        null
+    }
+    private val todayDate by if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        mutableStateOf(LocalDate.now().format(dateFormatter))
+    } else {
+        val calendar = Calendar.getInstance()
+        val legacyFormat = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault())
+        mutableStateOf(legacyFormat.format(calendar.time))
+    }
 
     private val eventChannel = Channel<SmartStepHomeEvent>()
     val events = eventChannel.receiveAsFlow()
@@ -66,18 +91,25 @@ class SmartStepHomeViewModel(
                 userProfileStore.baselineFlow,
                 userProfileStore.manualStepsFlow
             ) { sensorValue, baseline, manualSteps ->
-                if (manualSteps >= 0) {
+                Timber.d("Combine triggered - sensor: $sensorValue, baseline: $baseline, manual: $manualSteps")
+
+                val result = if (manualSteps > 0) {
                     manualSteps + maxOf(0, sensorValue - baseline)
                 } else {
                     maxOf(0, sensorValue - baseline)
                 }
-            }.collect { dailySteps ->
-                _state.update { it.copy(
-                    stepCount = dailySteps
-                ) }
+
+                result
             }
+                .flowOn(Dispatchers.Default)
+                .collect { dailySteps ->
+                    Timber.d("Collecting daily steps: $dailySteps")
+                    _state.update { it.copy(stepCount = dailySteps) }
+                }
         }
-    }
+
+        }
+
     private fun loadStepsGoal() {
         viewModelScope.launch {
             userProfileStore.getStep().collect { step->
@@ -265,6 +297,17 @@ class SmartStepHomeViewModel(
                   withContext(Dispatchers.IO) {
                       val job = async { stepProvider.stopListening() }
                       job.await()
+                      dao.insertDailyStep(
+                          DailyStep(
+                              date = todayDate,
+                              steps = 0 ,
+                              stepGoal = _state.value.dailyGoal,
+                              baseline = 0
+                          )
+                      )
+                      userProfileStore.saveBaseline(stepProvider.steps.first())
+                      userProfileStore.saveManualEdit(0)
+
                   }
                    eventChannel.send(SmartStepHomeEvent.TerminateApp)
                 }
@@ -300,7 +343,87 @@ class SmartStepHomeViewModel(
                     )
                 }
             }
+
+            is SmartStepHomeAction.onSaveDate -> saveStepsOfSpecificDate(action.date , action.steps)
+            SmartStepHomeAction.onResseting -> {
+                _state.update {
+                    it.copy(
+                        isReseting = !it.isReseting
+                    )
+                }
+            }
+
+            SmartStepHomeAction.onResetConfirm -> resetSteps()
         }
+    }
+
+    private fun resetSteps(){
+        viewModelScope.launch {
+            withContext(Dispatchers.Default) {
+                userProfileStore.saveBaseline(stepProvider.steps.first())
+                userProfileStore.saveManualEdit(0)
+                val activity = dao.getDailyStepByDate(todayDate)
+                if (activity != null) {
+                    dao.insertDailyStep(
+                        activity.copy(
+                            steps = 0
+                        )
+                    )
+                } else {
+                    dao.insertDailyStep(
+                        DailyStep(
+                            date = todayDate,
+                            stepGoal = userProfileStore.getStep().first(),
+                            steps = _state.value.stepCount,
+                            baseline = 0
+                        )
+                    )
+
+
+                }
+            }
+            _state.update {
+                it.copy(
+                    isReseting = false
+                )
+            }
+
+        }
+    }
+
+    private fun saveStepsOfSpecificDate(date: String, steps: Int){
+        viewModelScope.launch {
+         withContext(Dispatchers.IO) {
+             if (date == todayDate) {
+                 userProfileStore.saveManualEdit(steps)
+                 userProfileStore.saveBaseline(stepProvider.steps.first())
+                 dao.insertDailyStep(
+                     com.vs.smartstep.core.room.DailyStep(
+                         date = date,
+                         steps = _state.value.stepCount,
+                         stepGoal = _state.value.dailyGoal,
+                         baseline = 0
+                     )
+                 )
+             } else {
+                 dao.insertDailyStep(
+                     com.vs.smartstep.core.room.DailyStep(
+                         date = date,
+                         steps = steps,
+                         stepGoal = _state.value.dailyGoal,
+                         baseline = 0
+                     )
+                 )
+
+             }
+         }
+            _state.update {
+                it.copy(
+                    isEditingSteps = false
+                )
+            }
+        }
+
     }
 
     private fun openBackgroundDialog() {

@@ -11,7 +11,8 @@ data class SmartStepHomeState(
     val dailyGoal : Int = 0,
     val stepCount : Int = 0,
     val exitDialog : Boolean = false,
-    val isEditingSteps : Boolean = false
+    val isEditingSteps : Boolean = false,
+    val isReseting : Boolean = false
 
 ){
     val progress: Float
