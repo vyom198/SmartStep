@@ -29,7 +29,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 
 class SmartStepHomeViewModel(
     private val context: Context,
@@ -291,6 +290,7 @@ class SmartStepHomeViewModel(
             is SmartStepHomeAction.saveStep -> {
                 viewModelScope.launch {
                     userProfileStore.saveStep(action.steps)
+                    dao.saveGaol(action.steps , todayDate)
                     if (_state.value.dailyGoal > 0) {
                         stepProvider.startListening()
                         _state.update {
