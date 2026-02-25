@@ -12,6 +12,7 @@ interface userProfileStore {
     suspend fun  saveheightWithUnit ( unit : Int , height : Int)
     suspend fun askedBackgroundPermission(isAsked : Boolean)
     suspend fun getIsbackgroundAsked() : Boolean
+    fun getIsbackgroundAskedFlow() : Flow<Boolean>
 
     suspend fun addPermissionCount()
     fun getPermissionCount () : Flow<Int>

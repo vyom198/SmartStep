@@ -19,7 +19,8 @@ data class SmartStepHomeState(
     val isMetric : Boolean = false,
     val kcalorie : Int = 0,
     val ListOfDays : List<DailyActivityUI> = emptyList(),
-    val avgSteps : Int = 0
+    val avgSteps : Int = 0,
+    val currentItem : DailyActivityUI? = null
 
 ){
     val progress: Float

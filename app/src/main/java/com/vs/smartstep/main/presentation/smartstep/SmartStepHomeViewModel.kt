@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vs.smartstep.core.room.DailyStep
 import com.vs.smartstep.core.room.DailyStepDao
+import com.vs.smartstep.main.data.StepService
 import com.vs.smartstep.main.domain.StepProvider
 import com.vs.smartstep.main.domain.userProfileStore
 import com.vs.smartstep.main.presentation.util.calculateCalories
@@ -54,6 +55,7 @@ class SmartStepHomeViewModel(
 
             isIgnoringBatteryOptimizations(context)
             checkActivityPermission()
+            toggleService()
             loadSteps()
             loadCalories()
             getLast7DayDate()
@@ -68,16 +70,34 @@ class SmartStepHomeViewModel(
             initialValue = SmartStepHomeState()
         )
 
+    private fun toggleService(){
+        viewModelScope.launch(Dispatchers.Default) {
+            userProfileStore.getIsbackgroundAskedFlow().collect { isAllowed->
+                if(isAllowed){
+                    val intent = Intent(context, StepService::class.java).apply {
+                        action = StepService.Actions.START.toString()
+                    }
+                    context.startService(intent)
+                }else{
+                    val intent = Intent(context, StepService::class.java).apply {
+                        action = StepService.Actions.STOP.toString()
+
+                    }
+                    context.startService(intent)
+                }
+            }
+        }
+    }
     private fun getLast7DayDate(){
         viewModelScope.launch {
              dao.getStepsInDateRange(
                 startDate = getDaysAgoDate(6),
-                endDate = todayDate
+                endDate = getDaysAgoDate(1)
             ).collect { days->
                 _state.update {
                     it.copy(
                         ListOfDays = days.map {it.toUI() } ,
-                        avgSteps = days.sumOf { it.steps } / days.size
+                        avgSteps = days.sumOf { it.steps } + _state.value.stepCount / 7
                     )
                 }
              }
@@ -169,7 +189,14 @@ class SmartStepHomeViewModel(
                                 gender = userProfileStore.getGender(),
                                 userProfileStore.getWeightWithUnit().first
                             )
-
+                            dao.insertDailyStep(
+                                DailyStep(
+                                    date = todayDate,
+                                    kcal = kcal,
+                                    steps =_state.value.stepCount,
+                                    stepGoal = userProfileStore.getStep().first(),
+                                )
+                            )
                             withContext(Dispatchers.Main) {
                                 _state.update {
                                     it.copy(
@@ -220,7 +247,8 @@ class SmartStepHomeViewModel(
                 Timber.d("steps from room: ${item.steps}")
                 _state.update {
                     it.copy(
-                        stepCount = item.steps
+                        stepCount = item.steps,
+                        currentItem = item.toUI()
                     )
                 }
             }

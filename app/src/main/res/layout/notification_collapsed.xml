@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="72dp"
+    android:orientation="vertical"
+    android:padding="12dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/sneakers"
+            app:tint="#3A43B6" />
+        <TextView
+        android:id="@+id/tvStepCount"
+        android:layout_width="wrap_content"
+        android:layout_height="24sp"
+        android:layout_marginStart="8dp"
+        android:text="@string/step_count"
+        android:textColor="#1F2024"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+        <FrameLayout
+            android:layout_width="1dp"
+            android:layout_height="20dp"
+            android:layout_marginHorizontal="16dp"
+            android:background="#DDDDDD" />
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/weight_diet" />
+
+        <TextView
+            android:id="@+id/tvCalorieCount"
+            android:layout_width="wrap_content"
+            android:layout_height="24sp"
+            android:layout_marginStart="8dp"
+            android:text="@string/calorie_Count"
+            android:textColor="#1F2024"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/notificationProgress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="8dp"
+        android:layout_marginTop="8dp"
+        android:max="10000"
+        android:progress="7842"
+        android:progressDrawable="@drawable/notification_progress_bar" />
+</LinearLayout>

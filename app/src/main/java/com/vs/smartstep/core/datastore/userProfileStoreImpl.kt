@@ -94,6 +94,12 @@ class userProfileStoreImpl(
         return preferences[Keys.BackgroundAsked] ?: false
     }
 
+    override fun getIsbackgroundAskedFlow(): Flow<Boolean> {
+        return dataStore.data.map { preferences ->
+            preferences[Keys.BackgroundAsked] ?: false
+        }
+    }
+
     override suspend fun addPermissionCount() {
         dataStore.edit {
             val currentCount = it[Keys.PermissionCount] ?: 0

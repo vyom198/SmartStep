@@ -372,7 +372,8 @@ fun SmartStepHomeScreen(
                 Spacer(modifier = Modifier.height(12.dp))
                 WeeklyChart(
                     list = state.ListOfDays,
-                    avgSteps = state.avgSteps
+                    avgSteps = state.avgSteps,
+                    current = state.currentItem
                 )
             }
 

@@ -9,5 +9,6 @@ data class DailyStep(
     val date: String,
     val steps: Int,
     val stepGoal : Int ,
-    val baseline: Int
+    val kcal : Int = 0  ,
+    val baseline: Int =0
 )
