@@ -8,33 +8,24 @@ import android.net.Uri
 import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
-import androidx.annotation.RequiresApi
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.retain.LocalRetainedValuesStoreProvider
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.vs.smartstep.core.room.*
+import com.vs.smartstep.core.room.DailyStep
 import com.vs.smartstep.core.room.DailyStepDao
 import com.vs.smartstep.main.domain.StepProvider
 import com.vs.smartstep.main.domain.userProfileStore
 import com.vs.smartstep.main.presentation.util.calculateCalories
 import com.vs.smartstep.main.presentation.util.calculateDistance
+import com.vs.smartstep.main.presentation.util.getDaysAgoDate
 import com.vs.smartstep.main.presentation.util.getTodayDate
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -43,11 +34,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
-import java.text.SimpleDateFormat
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import java.util.Calendar
-import java.util.Locale
 import kotlin.math.abs
 
 class SmartStepHomeViewModel(
@@ -70,6 +56,7 @@ class SmartStepHomeViewModel(
             checkActivityPermission()
             loadSteps()
             loadCalories()
+            getLast7DayDate()
             UpdateSteps()
             loadMetrics()
             loadStepsGoal()
@@ -81,6 +68,22 @@ class SmartStepHomeViewModel(
             initialValue = SmartStepHomeState()
         )
 
+    private fun getLast7DayDate(){
+        viewModelScope.launch {
+             dao.getStepsInDateRange(
+                startDate = getDaysAgoDate(6),
+                endDate = todayDate
+            ).collect { days->
+                _state.update {
+                    it.copy(
+                        ListOfDays = days.map {it.toUI() } ,
+                        avgSteps = days.sumOf { it.steps } / days.size
+                    )
+                }
+             }
+        }
+
+    }
     private fun loadMetrics() {
         viewModelScope.launch {
             userProfileStore.totalTime.collect { time ->
@@ -138,7 +141,7 @@ class SmartStepHomeViewModel(
                         DailyStep(
                             date = todayDate,
                             steps = dailySteps,
-                            stepGoal = _state.value.dailyGoal,
+                            stepGoal = userProfileStore.getStep().first(),
                             baseline = 0
                         ))
                 }

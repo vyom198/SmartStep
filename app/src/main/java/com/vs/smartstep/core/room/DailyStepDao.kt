@@ -8,8 +8,13 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface DailyStepDao {
-    @Query("SELECT * FROM daily_steps ORDER BY date ASC LIMIT 7")
-    fun getLast7DaysAscending(): Flow<List<DailyStep>>
+    @Query("""
+        SELECT * FROM daily_steps 
+        WHERE date >= :startDate 
+        AND date <= :endDate
+        ORDER BY date Asc
+    """)
+    fun getStepsInDateRange(startDate: String, endDate: String): Flow<List<DailyStep>>
 
     @Query("SELECT * FROM daily_steps WHERE date = :date")
     fun getDailyStepByDateFlow(date: String): Flow<DailyStep>

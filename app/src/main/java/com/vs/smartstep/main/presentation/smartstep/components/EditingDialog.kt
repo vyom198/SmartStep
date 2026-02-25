@@ -482,8 +482,12 @@ fun DatePickerDialog(
                 TextButton(
                     modifier = Modifier.wrapContentSize(),
                     onClick = {
-                        val date = "${listOfYears[yearPickerState.firstVisibleItemIndex]}/${listOfMonths[monthPickerState.firstVisibleItemIndex]}/${listOfDates[dayPickerState.firstVisibleItemIndex]}"
-                        Timber.i(date)
+                        val date = "${listOfYears[yearPickerState.firstVisibleItemIndex]}/${
+                            listOfMonths[monthPickerState.firstVisibleItemIndex].toString().padStart(2, '0')
+                        }/${
+                            listOfDates[dayPickerState.firstVisibleItemIndex].toString().padStart(2, '0')
+                        }"
+                        Timber.d("date : $date")
                         onConfirm(date)
 
                     }

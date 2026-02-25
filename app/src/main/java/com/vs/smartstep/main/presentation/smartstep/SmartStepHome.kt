@@ -8,6 +8,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -76,6 +77,7 @@ import com.vs.smartstep.main.presentation.smartstep.components.ResettingDialog
 import com.vs.smartstep.main.presentation.smartstep.components.SmartStepDrawerSheet
 import com.vs.smartstep.main.presentation.smartstep.components.StepEditingDialog
 import com.vs.smartstep.main.presentation.smartstep.components.StepGoalBottomSheet
+import com.vs.smartstep.main.presentation.smartstep.components.WeeklyChart
 import com.vs.smartstep.main.presentation.util.toCommaString
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
@@ -231,10 +233,10 @@ fun SmartStepHomeScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
 
             ) {
-                Spacer(modifier = Modifier.weight(1f))
                 Card(
                     modifier = Modifier
                         .width(380.dp)
@@ -367,8 +369,11 @@ fun SmartStepHomeScreen(
 
 
                 }
-                Spacer(modifier = Modifier.weight(1f))
-
+                Spacer(modifier = Modifier.height(12.dp))
+                WeeklyChart(
+                    list = state.ListOfDays,
+                    avgSteps = state.avgSteps
+                )
             }
 
             if (state.shouldShowAllow  && show!! && state.count == 1) {

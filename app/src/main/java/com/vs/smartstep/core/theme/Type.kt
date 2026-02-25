@@ -73,7 +73,14 @@ val Typography.bodySmallRegular
         lineHeight = 16.sp,
 
         )
+val Typography.bodySmallRegular18
+    get() = TextStyle(
+        fontFamily = inter,
+        fontWeight = FontWeight.Normal,
+        fontSize = 12.sp,
+        lineHeight = 18.sp,
 
+        )
 
 val Typography = Typography(
     bodyLarge = TextStyle(
