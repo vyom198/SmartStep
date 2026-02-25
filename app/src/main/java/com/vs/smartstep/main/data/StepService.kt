@@ -41,7 +41,6 @@ class StepService : Service() , KoinComponent {
                 start()
             }
             Actions.STOP.toString() -> {
-                stopForeground(true)
                 stopSelf()
                 return START_NOT_STICKY
             }
