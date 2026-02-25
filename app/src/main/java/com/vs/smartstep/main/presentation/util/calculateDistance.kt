@@ -21,7 +21,8 @@ fun calculateDistance(
     
     return roundedValue
 }
-
+fun Long.toMinutesRounded(): Int =
+    (this / (1000f * 60f)).roundToInt()
 fun calculateCalories(
     steps: Int,
     weight: Int ,

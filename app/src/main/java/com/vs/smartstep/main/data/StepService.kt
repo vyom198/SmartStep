@@ -42,7 +42,7 @@ class StepService : Service() , KoinComponent {
             }
             Actions.STOP.toString() -> stopSelf()
         }
-      return START_STICKY
+      return super.onStartCommand(intent, flags, startId)
     }
 
     @SuppressLint("RemoteViewLayout")
@@ -72,11 +72,10 @@ class StepService : Service() , KoinComponent {
                             append(item.toString())
                             append(goal.toString())
                         })
-                        // This block runs whenever either the Database OR the Goal changes
                         updateNotification(
                             pendingIntent,
-                            steps = item.steps,
-                            kcal = item.kcal,
+                            steps = item?.steps?:0,
+                            kcal = item?.kcal?:0,
                             goal = goal
                         )
                     }.collect()

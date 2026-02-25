@@ -7,8 +7,12 @@ import androidx.room.PrimaryKey
 data class DailyStep(
     @PrimaryKey
     val date: String,
-    val steps: Int,
-    val stepGoal : Int ,
-    val kcal : Int = 0  ,
-    val baseline: Int =0
+    val steps: Int = 0,
+    val stepGoal : Int = 0 ,
+    val distance : Double = 0.0 ,
+    val kcal : Int = 0 ,
+    val lastSensorValue : Long = 0,
+    val baseline: Long =0,
+    val manualSteps : Int = 0,
+    val timeTaken : Long = 0
 )

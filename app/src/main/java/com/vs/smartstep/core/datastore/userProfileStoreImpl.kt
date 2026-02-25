@@ -31,10 +31,6 @@ class userProfileStoreImpl(
         val PermissionCount = intPreferencesKey("permission_count")
 
         val STEP_GOAL  = intPreferencesKey("step_goal")
-        val BASELINE  = intPreferencesKey("baseline")
-        val MANUAL_STEPS = intPreferencesKey("manual_steps")
-
-        val TIMEPAST = longPreferencesKey("time_past")
     }
 
 
@@ -111,7 +107,6 @@ class userProfileStoreImpl(
 
     override fun isProfileSetup(): Flow<Boolean> = dataStore.data
         .map { preferences ->
-            // Check if a required key (like gender or weight) is not null/empty
             val gender = preferences[Keys.GENDER]
             !gender.isNullOrBlank()
         }
@@ -128,40 +123,5 @@ class userProfileStoreImpl(
         }
 
     }
-    override suspend fun saveBaseline(sensorValue: Int) {
-        dataStore.edit {
-            it[Keys.BASELINE] = sensorValue
-        }
-    }
 
-    override val baselineFlow: Flow<Int> =  dataStore.data.map {
-        it[Keys.BASELINE] ?: 0
-    }
-
-    override suspend fun saveManualEdit(manualSteps: Int) {
-        dataStore.edit {
-            it[Keys.MANUAL_STEPS] = manualSteps
-        }
-    }
-
-    override suspend fun addTime(time: Long) {
-        dataStore.edit {
-            val current = it[Keys.TIMEPAST] ?: 0
-            it[Keys.TIMEPAST] = current + time
-        }
-    }
-
-    override suspend fun resetTime() {
-        dataStore.edit {
-            it[Keys.TIMEPAST] = 0
-        }
-    }
-
-    override val totalTime: Flow<Long> = dataStore.data.map {
-        it[Keys.TIMEPAST] ?: 0
-    }
-
-    override val manualStepsFlow: Flow<Int> =  dataStore.data.map {
-        it[Keys.MANUAL_STEPS] ?: 0
-    }
 }
