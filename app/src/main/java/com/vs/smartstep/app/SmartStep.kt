@@ -39,7 +39,7 @@ class SmartStep : Application() {
             val channel = NotificationChannel(
                 "step",
                 "show_steps",
-                NotificationManager.IMPORTANCE_MIN
+                NotificationManager.IMPORTANCE_HIGH
             )
             channel.description = "Used for Running Step Service"
 

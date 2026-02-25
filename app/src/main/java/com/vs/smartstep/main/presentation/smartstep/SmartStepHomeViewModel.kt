@@ -72,19 +72,17 @@ class SmartStepHomeViewModel(
 
     private fun toggleService(){
         viewModelScope.launch(Dispatchers.Default) {
-            userProfileStore.getIsbackgroundAskedFlow().collect { isAllowed->
-                if(isAllowed){
-                    val intent = Intent(context, StepService::class.java).apply {
-                        action = StepService.Actions.START.toString()
-                    }
-                    context.startService(intent)
+            val intent = Intent(context, StepService::class.java).apply {
+                action = if (_state.value.isIgnoringBatteryOpti) StepService.Actions.START.toString() else StepService.Actions.STOP.toString()
+            }
+            if (_state.value.isIgnoringBatteryOpti) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    context.startForegroundService(intent)
                 }else{
-                    val intent = Intent(context, StepService::class.java).apply {
-                        action = StepService.Actions.STOP.toString()
-
-                    }
                     context.startService(intent)
                 }
+            } else {
+                context.startService(intent)
             }
         }
     }
@@ -124,6 +122,15 @@ class SmartStepHomeViewModel(
                 _state.update {
                     it.copy(
                         isMetric = bool
+                    )
+                }
+            }
+        }
+        viewModelScope.launch {
+            if(_state.value.isIgnoringBatteryOpti){
+                _state.update {
+                    it.copy(
+                        playPause = true
                     )
                 }
             }
@@ -169,7 +176,6 @@ class SmartStepHomeViewModel(
                 val stepDifference = dailySteps - lastProcessedSteps
                 val shouldUpdate = when {
                     stepDifference >= 10 -> true
-                    manualSteps > 0 -> true
                     else -> false
                 }
                 Pair(dailySteps, shouldUpdate )
@@ -193,7 +199,7 @@ class SmartStepHomeViewModel(
                                 DailyStep(
                                     date = todayDate,
                                     kcal = kcal,
-                                    steps =_state.value.stepCount,
+                                    steps = dailySteps,
                                     stepGoal = userProfileStore.getStep().first(),
                                 )
                             )
@@ -402,6 +408,7 @@ class SmartStepHomeViewModel(
 
             SmartStepHomeAction.OnDisposed -> {
                 isIgnoringBatteryOptimizations(context)
+                toggleService()
             }
 
             SmartStepHomeAction.stepGoalBottomSheet -> {
