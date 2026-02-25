@@ -6,7 +6,7 @@ import androidx.room.RoomDatabase
 
 @Database(
     entities = [DailyStep::class],
-    version = 2,
+    version = 4,
 )
 abstract class DailyStepDatabase: RoomDatabase() {
     abstract val dailyStepDao : DailyStepDao

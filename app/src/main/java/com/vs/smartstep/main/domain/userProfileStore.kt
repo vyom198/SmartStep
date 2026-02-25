@@ -21,13 +21,5 @@ interface userProfileStore {
 
     suspend fun saveStep(step : Int)
     fun getStep() : Flow<Int>
-    val baselineFlow: Flow<Int>
-    val manualStepsFlow: Flow<Int>
-    suspend fun saveBaseline(sensorValue: Int)
-    suspend fun saveManualEdit(manualSteps: Int)
-    suspend fun addTime(time : Long)
-     suspend fun resetTime ()
-    val totalTime : Flow<Long>
-
 
 }
