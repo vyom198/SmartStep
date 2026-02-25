@@ -1,55 +1,83 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:padding="12dp">
+    >
 
     <LinearLayout
-        android:id="@+id/dataRow"
-        android:layout_width="wrap_content"
+        android:id="@+id/statsContainer"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="4dp"
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
-        <ImageView
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:src="@drawable/sneakers"
-            app:tint="#3A43B6" />
-        <TextView
-            android:id="@+id/tvStepCount"
-            android:layout_width="wrap_content"
-            android:layout_height="24sp"
-            android:layout_marginStart="8dp"
-            android:text="@string/step_count"
-            android:textColor="#1F2024"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+        <LinearLayout
+            android:layout_width="128.5dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingStart="12dp"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/sneakers"
+                android:tint="#3A43B6"
+                tools:ignore="UseAppTint" />
+
+            <TextView
+                android:id="@+id/tvStepCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:fontFamily="sans-serif-medium"
+                android:text="0"
+                android:textColor="#1F2024"
+                android:textSize="16sp" />
+        </LinearLayout>
 
         <FrameLayout
             android:layout_width="1dp"
             android:layout_height="20dp"
-            android:layout_marginHorizontal="16dp"
             android:background="#DDDDDD" />
 
-        <ImageView
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:src="@drawable/weight_diet" />
+        <LinearLayout
+            android:layout_width="128.5dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingStart="12dp"
+            android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/tvCalorieCount"
-            android:layout_width="wrap_content"
-            android:layout_height="24sp"
-            android:layout_marginStart="8dp"
-            android:text="@string/calorie_Count"
-            android:textColor="#1F2024"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/weight_diet"
+                android:tint="#3A43B6"
+                tools:ignore="UseAppTint" />
+
+            <TextView
+                android:id="@+id/tvCalorieCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:fontFamily="sans-serif-medium"
+                android:text="0"
+                android:textColor="#1F2024"
+                android:textSize="16sp" />
+        </LinearLayout>
     </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/notificationProgress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="257dp"
+        android:layout_height="8dp"
+        android:layout_below="@id/statsContainer"
+        android:layout_marginTop="12dp"
+        android:max="10000"
+        android:progress="0"
+        android:progressDrawable="@drawable/notification_progress_bar" />
 
     <ImageButton
         android:id="@+id/btnOpenApp"
@@ -57,18 +85,12 @@
         android:layout_height="26dp"
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
-        android:background="#3A43B6"
+        android:background="@drawable/circle_bg"
+        android:contentDescription="Open App"
+        android:padding="6dp"
+        android:scaleType="centerInside"
         android:src="@drawable/arrow"
-        android:padding="8dp"
-        android:scaleType="centerInside" />
-
-    <ProgressBar
-        android:id="@+id/notificationProgressExpanded"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="match_parent"
-        android:layout_height="8dp"
-        android:layout_below="@id/dataRow"
-        android:layout_marginTop="16dp"
-        android:progressDrawable="@drawable/notification_progress_bar" />
+        android:tint="#FFFFFF"
+        tools:ignore="UseAppTint" />
 
 </RelativeLayout>

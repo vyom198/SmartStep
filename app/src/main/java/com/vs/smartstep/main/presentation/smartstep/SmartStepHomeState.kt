@@ -13,7 +13,7 @@ data class SmartStepHomeState(
     val exitDialog : Boolean = false,
     val isEditingSteps : Boolean = false,
     val isReseting : Boolean = false,
-    val playPause : Boolean = false,
+    val playPause : Boolean =  false,
     val totalTime : Int = 0,
     val distanceTravelled : Double = 0.0 ,
     val isMetric : Boolean = false,
@@ -23,6 +23,7 @@ data class SmartStepHomeState(
     val currentItem : DailyActivityUI? = null
 
 ){
+
     val progress: Float
         get() = (stepCount.toFloat() / dailyGoal.coerceAtLeast(1)).coerceIn(0f, 1f)
 }
