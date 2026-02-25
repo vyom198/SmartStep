@@ -27,5 +27,7 @@ interface DailyStepDao {
     @Query("UPDATE daily_steps SET timeTaken = timeTaken + :additionalTime WHERE date = :date")
     suspend fun addTime(additionalTime: Long, date: String)
 
+    @Query("UPDATE daily_steps SET stepGoal = :step WHERE date = :date")
+    suspend fun saveGaol(step : Int , date: String)
 
 }

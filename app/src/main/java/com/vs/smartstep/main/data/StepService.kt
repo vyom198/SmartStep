@@ -40,7 +40,10 @@ class StepService : Service() , KoinComponent {
                 stepDetector.startListening()
                 start()
             }
-            Actions.STOP.toString() -> stopSelf()
+            Actions.STOP.toString() -> {
+                stopSelf()
+                return START_NOT_STICKY
+            }
         }
       return super.onStartCommand(intent, flags, startId)
     }
@@ -107,12 +110,8 @@ class StepService : Service() , KoinComponent {
             .setOnlyAlertOnce(true)
             .setOngoing(true)
             .build()
-
-        // Use NotificationManager to update the existing notification
         val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         manager.notify(1, notification)
-
-        // Also call startForeground the first time
         startForeground(1, notification)
     }
     enum class Actions {
