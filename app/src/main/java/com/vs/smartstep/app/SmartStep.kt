@@ -1,6 +1,10 @@
 package com.vs.smartstep.app
 
 import android.app.Application
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
+import android.os.Build
 import com.vs.smartstep.BuildConfig
 import com.vs.smartstep.core.di.coreModule
 import com.vs.smartstep.main.di.mainModule
@@ -27,6 +31,20 @@ class SmartStep : Application() {
                 coreModule
 
             )
+        }
+        createNotificationChannel()
+    }
+    private fun createNotificationChannel() {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                "step",
+                "show_steps",
+                NotificationManager.IMPORTANCE_MIN
+            )
+            channel.description = "Used for Running Step Service"
+
+            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
         }
     }
 }

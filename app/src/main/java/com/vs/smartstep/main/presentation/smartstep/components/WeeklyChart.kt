@@ -32,8 +32,11 @@ import com.vs.smartstep.main.presentation.util.toCommaString
 @Composable
 fun WeeklyChart(
     list : List<DailyActivityUI>,
-    avgSteps : Int
+    avgSteps : Int ,
+    current : DailyActivityUI?
 ) {
+
+
     Column(
         modifier = Modifier.width(380.dp).height(153.dp).clip(
             RoundedCornerShape(28.dp)
@@ -56,6 +59,8 @@ fun WeeklyChart(
             list.forEach { item ->
                 DailyItemUI(item)
             }
+            DailyItemUI(current ?: DailyActivityUI("", 0 , 0 ))
+
         }
     }
 
