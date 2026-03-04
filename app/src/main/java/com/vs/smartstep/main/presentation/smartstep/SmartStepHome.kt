@@ -68,6 +68,7 @@ import com.vs.smartstep.core.theme.segmentedText
 import com.vs.smartstep.core.theme.title_Accent
 import com.vs.smartstep.core.theme.title_Medium
 import com.vs.smartstep.main.presentation.components.ObserveAsEvents
+import com.vs.smartstep.main.presentation.smartstep.components.AIInsightCard
 import com.vs.smartstep.main.presentation.smartstep.components.AllowAccessBottomS
 import com.vs.smartstep.main.presentation.smartstep.components.AllowBackgroundBottomSheet
 import com.vs.smartstep.main.presentation.smartstep.components.ExitDialog
@@ -234,9 +235,9 @@ fun SmartStepHomeScreen(
                     .fillMaxSize()
                     .padding(paddingValues),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
 
             ) {
+                Spacer(modifier = Modifier.height(35.dp))
                 Card(
                     modifier = Modifier
                         .width(380.dp)
@@ -374,6 +375,10 @@ fun SmartStepHomeScreen(
                     list = state.ListOfDays,
                     avgSteps = state.avgSteps,
                     current = state.currentItem
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                AIInsightCard(
+                    isConnected = state.isConnected
                 )
             }
 

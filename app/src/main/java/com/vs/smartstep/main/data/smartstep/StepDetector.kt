@@ -1,4 +1,4 @@
-package com.vs.smartstep.main.data
+package com.vs.smartstep.main.data.smartstep
 
 import android.content.Context
 import android.hardware.Sensor
@@ -7,17 +7,14 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import com.vs.smartstep.core.room.DailyStep
 import com.vs.smartstep.core.room.DailyStepDao
-import com.vs.smartstep.main.domain.StepProvider
-import com.vs.smartstep.main.domain.userProfileStore
+import com.vs.smartstep.main.domain.smartStep.StepProvider
+import com.vs.smartstep.main.domain.smartStep.userProfileStore
 import com.vs.smartstep.main.presentation.util.calculateCalories
 import com.vs.smartstep.main.presentation.util.calculateDistance
 import com.vs.smartstep.main.presentation.util.getDaysAgoDate
 import com.vs.smartstep.main.presentation.util.getTodayDate
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -38,13 +35,13 @@ class StepDetector(
     override fun startListening() {
         stepSensor?.let {
             sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_UI)
-            Timber.i("Step Counter Sensor Started")
-        } ?: Timber.e("Step Counter Sensor not available on this device")
+            Timber.Forest.i("Step Counter Sensor Started")
+        } ?: Timber.Forest.e("Step Counter Sensor not available on this device")
     }
 
     override fun stopListening() {
         sensorManager.unregisterListener(this)
-        Timber.i("Step Counter Sensor stopped")
+        Timber.Forest.i("Step Counter Sensor stopped")
     }
 
 
@@ -58,7 +55,7 @@ class StepDetector(
                 val timeDelta = now - lastStepTimestamp
                 if (existingActivity != null) {
                     stepDifference +=  (totalStepsSinceBoot - existingActivity.lastSensorValue).toInt()
-                    Timber.d("Step Difference: $stepDifference")
+                    Timber.Forest.d("Step Difference: $stepDifference")
                     val dailySteps = if (totalStepsSinceBoot > 0) {
                         if (existingActivity.manualSteps > 0) {
                             existingActivity.manualSteps + abs(totalStepsSinceBoot - existingActivity.baseline.toInt())
@@ -69,10 +66,19 @@ class StepDetector(
                         existingActivity.steps
                     }
                     if(stepDifference > 10){
-                        val calorie = calculateCalories(dailySteps,userProfileStore.getWeightWithUnit().second,userProfileStore.getGender(),userProfileStore.getWeightWithUnit().first)
-                        val distanceTravelled = calculateDistance(dailySteps,userProfileStore.getHeightWithUnit().second.toDouble() , userProfileStore.getWeightWithUnit().first)
-                        Timber.d("Calorie: $calorie")
-                        Timber.d("Distance: $distanceTravelled")
+                        val calorie = calculateCalories(
+                            dailySteps,
+                            userProfileStore.getWeightWithUnit().second,
+                            userProfileStore.getGender(),
+                            userProfileStore.getWeightWithUnit().first
+                        )
+                        val distanceTravelled = calculateDistance(
+                            dailySteps,
+                            userProfileStore.getHeightWithUnit().second.toDouble(),
+                            userProfileStore.getWeightWithUnit().first
+                        )
+                        Timber.Forest.d("Calorie: $calorie")
+                        Timber.Forest.d("Distance: $distanceTravelled")
                         dao.insertDailyStep(
                             existingActivity.copy(
                                 kcal = calorie,
@@ -102,7 +108,8 @@ class StepDetector(
                         stepGoal = userProfileStore.getStep().first(),
                         lastSensorValue = totalStepsSinceBoot.toLong(),
                         timeTaken = 0,
-                        baseline = yesterdayActivity?.lastSensorValue ?: totalStepsSinceBoot.toLong(),
+                        baseline = yesterdayActivity?.lastSensorValue
+                            ?: totalStepsSinceBoot.toLong(),
                         manualSteps = 0,
                         distance = 0.0,
                         kcal = 0

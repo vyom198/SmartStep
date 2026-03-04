@@ -12,9 +12,10 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vs.smartstep.core.room.DailyStepDao
-import com.vs.smartstep.main.data.StepService
-import com.vs.smartstep.main.domain.StepProvider
-import com.vs.smartstep.main.domain.userProfileStore
+import com.vs.smartstep.main.data.smartstep.StepService
+import com.vs.smartstep.main.domain.smartStep.ConnectionProvider
+import com.vs.smartstep.main.domain.smartStep.StepProvider
+import com.vs.smartstep.main.domain.smartStep.userProfileStore
 import com.vs.smartstep.main.presentation.util.getDaysAgoDate
 import com.vs.smartstep.main.presentation.util.getTodayDate
 import com.vs.smartstep.main.presentation.util.toMinutesRounded
@@ -34,7 +35,8 @@ class SmartStepHomeViewModel(
     private val context: Context,
     private val userProfileStore: userProfileStore,
     private val stepProvider: StepProvider,
-    private val dao: DailyStepDao
+    private val dao: DailyStepDao,
+    private val connectionProvider: ConnectionProvider
 ) : ViewModel() {
 
     private val todayDate = getTodayDate()
@@ -47,6 +49,7 @@ class SmartStepHomeViewModel(
 
             isIgnoringBatteryOptimizations(context)
             checkActivityPermission()
+            checkIsConnected()
             toggleService()
             loadUIdata()
             getLast7DayDate()
@@ -59,7 +62,17 @@ class SmartStepHomeViewModel(
             started = SharingStarted.WhileSubscribed(5_000L),
             initialValue = SmartStepHomeState()
         )
-
+    private fun checkIsConnected(){
+        viewModelScope.launch {
+            connectionProvider.isConnected.collect { connected ->
+                _state.update {
+                    it.copy(
+                        isConnected = connected
+                    )
+                }
+            }
+        }
+    }
     private fun toggleService(){
         viewModelScope.launch(Dispatchers.Default) {
             val intent = Intent(context, StepService::class.java).apply {

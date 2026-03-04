@@ -10,7 +10,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.rememberNavController
 import com.vs.smartstep.app.navigation.NavigationApp
 import com.vs.smartstep.core.theme.SmartStepTheme
-import com.vs.smartstep.main.domain.userProfileStore
+import com.vs.smartstep.main.domain.smartStep.userProfileStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.collect

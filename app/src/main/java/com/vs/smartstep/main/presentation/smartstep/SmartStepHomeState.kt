@@ -15,6 +15,7 @@ data class SmartStepHomeState(
     val isReseting : Boolean = false,
     val playPause : Boolean =  false,
     val totalTime : Int = 0,
+    val isConnected : Boolean = false,
     val distanceTravelled : Double = 0.0 ,
     val isMetric : Boolean = false,
     val kcalorie : Int = 0,
