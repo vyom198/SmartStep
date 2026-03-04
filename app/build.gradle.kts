@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.room)
     alias(libs.plugins.jetbrains.kotlin.serialization)
+    id("com.google.gms.google-services")
 }
 room {
     schemaDirectory("$projectDir/schemas")
@@ -74,8 +75,9 @@ dependencies {
     implementation(libs.androidx.compose.navigation)
     implementation(libs.kotlinx.serialization.json)
 
-
-
+    //firebase
+    implementation(platform("com.google.firebase:firebase-bom:34.9.0"))
+    implementation("com.google.firebase:firebase-analytics")
     // Logging
     implementation(libs.timber)
 
@@ -89,13 +91,13 @@ dependencies {
     implementation(libs.room.ktx)
     implementation(libs.room.runtime)
     ksp(libs.room.compiler)
-
+    implementation("com.google.firebase:firebase-ai")
         // For calculating screen size classes (Compact, Medium, Expanded)
-        implementation("androidx.compose.material3:material3-window-size-class")
+    implementation("androidx.compose.material3:material3-window-size-class")
 
-        // For pre-built adaptive layouts like List-Detail or Supporting Pane
-        implementation("androidx.compose.material3.adaptive:adaptive:1.0.0")
-        implementation("androidx.compose.material3.adaptive:adaptive-layout:1.0.0")
-        implementation("androidx.compose.material3.adaptive:adaptive-navigation:1.0.0")
+    // For pre-built adaptive layouts like List-Detail or Supporting Pane
+    implementation("androidx.compose.material3.adaptive:adaptive:1.0.0")
+    implementation("androidx.compose.material3.adaptive:adaptive-layout:1.0.0")
+    implementation("androidx.compose.material3.adaptive:adaptive-navigation:1.0.0")
     
 }

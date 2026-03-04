@@ -1,4 +1,4 @@
-package com.vs.smartstep.main.data
+package com.vs.smartstep.main.data.smartstep
 
 import android.annotation.SuppressLint
 import android.app.NotificationManager
@@ -11,8 +11,8 @@ import androidx.core.app.NotificationCompat
 import com.vs.smartstep.R
 import com.vs.smartstep.app.MainActivity
 import com.vs.smartstep.core.room.DailyStepDao
-import com.vs.smartstep.main.domain.StepProvider
-import com.vs.smartstep.main.domain.userProfileStore
+import com.vs.smartstep.main.domain.smartStep.StepProvider
+import com.vs.smartstep.main.domain.smartStep.userProfileStore
 import com.vs.smartstep.main.presentation.util.getTodayDate
 import com.vs.smartstep.main.presentation.util.toCommaString
 import kotlinx.coroutines.CoroutineScope
@@ -25,12 +25,11 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import timber.log.Timber
 
-
 class StepService : Service() , KoinComponent {
     private val userProfileStore : userProfileStore by inject()
     private  val dao : DailyStepDao by inject()
     private val stepDetector : StepProvider by inject()
-    private val scope = CoroutineScope(Dispatchers.Main )
+    private val scope = CoroutineScope(Dispatchers.Main)
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -66,19 +65,19 @@ class StepService : Service() , KoinComponent {
 
 
 
-                scope.launch (Dispatchers.Default) {
+                scope.launch(Dispatchers.Default) {
                     combine(
                         dao.getDailyStepByDateFlow(getTodayDate()),
                         userProfileStore.getStep()
                     ) { item, goal ->
-                        Timber.d(buildString {
+                        Timber.Forest.d(buildString {
                             append(item.toString())
                             append(goal.toString())
                         })
                         updateNotification(
                             pendingIntent,
-                            steps = item?.steps?:0,
-                            kcal = item?.kcal?:0,
+                            steps = item?.steps ?: 0,
+                            kcal = item?.kcal ?: 0,
                             goal = goal
                         )
                     }.collect()
@@ -86,7 +85,7 @@ class StepService : Service() , KoinComponent {
             }
 
     }
-    private fun updateNotification(pendingIntent: PendingIntent,steps: Int, kcal: Int, goal: Int) {
+    private fun updateNotification(pendingIntent: PendingIntent, steps: Int, kcal: Int, goal: Int) {
         val collapsedView = RemoteViews(packageName, R.layout.notification_collapsed)
         val expandedView = RemoteViews(packageName, R.layout.notifiication_expand)
 

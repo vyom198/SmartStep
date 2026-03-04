@@ -1,4 +1,4 @@
-package com.vs.smartstep.main.domain
+package com.vs.smartstep.main.domain.smartStep
 
 import kotlinx.coroutines.flow.Flow
 

@@ -2,7 +2,7 @@ package com.vs.smartstep.main.presentation.myprofile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.vs.smartstep.main.domain.userProfileStore
+import com.vs.smartstep.main.domain.smartStep.userProfileStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow

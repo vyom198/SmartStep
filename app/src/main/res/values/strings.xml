@@ -3,5 +3,7 @@
     <string name="background_access_helps_smart_step_track_compact">Background access helps Smart Step track \n your activity more reliably.</string>
     <string name="step_count">7,842</string>
     <string name="calorie_Count">342</string>
+    <string name="more">More</string>
+    <string name="try_again">Try again</string>
 
 </resources>
