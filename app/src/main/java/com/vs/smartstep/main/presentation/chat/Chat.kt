@@ -58,6 +58,7 @@ import com.vs.smartstep.core.theme.TextSecondary
 import com.vs.smartstep.core.theme.bodyLargeRegular
 import com.vs.smartstep.core.theme.segmentedText
 import com.vs.smartstep.core.theme.title_Medium
+import com.vs.smartstep.main.presentation.chat.components.ChatWindow
 import com.vs.smartstep.main.presentation.chat.components.Suggestions
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
@@ -135,7 +136,9 @@ fun ChatScreen(
                 thickness = 1.dp,
                 color = StrokeMain
             )
-            Spacer(modifier = Modifier.weight(1f))
+            Column(modifier =Modifier.weight(1f)) {
+                ChatWindow(list = state.messages)
+            }
             HorizontalDivider(
                 modifier = Modifier.fillMaxWidth(),
                 thickness = 1.dp,
@@ -174,14 +177,8 @@ fun ChatScreen(
                 if(state.isSuggestion){
                     Spacer(modifier= Modifier.height(20.dp))
                     Suggestions(isEnabled  = state.isInternetAvailable,
-                        onRecommendedWorkout = {
-
-                        },
-                        onTodayTrend = {
-
-                        },
-                        onHowToReachGoal = {
-
+                        onSuggestionClick = {
+                            onAction(ChatAction.SendMessage(it))
                         }
                     )
                 }
@@ -242,6 +239,8 @@ fun ChatScreen(
                         )
                     IconButton(
                         onClick = {
+                            onAction(ChatAction.SendMessage(state.query))
+                            onAction(ChatAction.ontextChange(""))
 
                         },
                         enabled = state.isInternetAvailable,
