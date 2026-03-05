@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vs.smartstep.core.room.DailyStepDao
 import com.vs.smartstep.main.data.smartstep.StepService
+import com.vs.smartstep.main.domain.smartStep.AIInsights
 import com.vs.smartstep.main.domain.smartStep.ConnectionProvider
 import com.vs.smartstep.main.domain.smartStep.StepProvider
 import com.vs.smartstep.main.domain.smartStep.userProfileStore
@@ -36,6 +37,7 @@ class SmartStepHomeViewModel(
     private val userProfileStore: userProfileStore,
     private val stepProvider: StepProvider,
     private val dao: DailyStepDao,
+    private val insights : AIInsights,
     private val connectionProvider: ConnectionProvider
 ) : ViewModel() {
 
@@ -55,6 +57,7 @@ class SmartStepHomeViewModel(
             getLast7DayDate()
             loadMetrics()
             loadStepsGoal()
+            getMotivation()
 
         }
         .stateIn(
@@ -62,14 +65,24 @@ class SmartStepHomeViewModel(
             started = SharingStarted.WhileSubscribed(5_000L),
             initialValue = SmartStepHomeState()
         )
-    private fun checkIsConnected(){
+
+    private fun getMotivation(){
         viewModelScope.launch {
-            connectionProvider.isConnected.collect { connected ->
+            insights.getInsights().collect { insights ->
                 _state.update {
                     it.copy(
-                        isConnected = connected
+                        shortInsight = insights
                     )
                 }
+            }
+        }
+    }
+    private fun checkIsConnected(){
+        viewModelScope.launch {
+            _state.update {
+                it.copy(
+                    isConnected = connectionProvider.isConnected
+                )
             }
         }
     }
@@ -416,6 +429,24 @@ class SmartStepHomeViewModel(
                     it.copy(
                         playPause = !it.playPause
                     )
+                }
+            }
+
+            SmartStepHomeAction.onReload -> {
+                viewModelScope.launch(Dispatchers.IO) {
+                    val connected = connectionProvider.isConnected
+                    if(connected){
+                      getMotivation()
+                    }
+                    withContext(Dispatchers.Main){
+                        _state.update {
+                            it.copy(
+                                isConnected = connected
+                            )
+
+                        }
+                    }
+
                 }
             }
         }

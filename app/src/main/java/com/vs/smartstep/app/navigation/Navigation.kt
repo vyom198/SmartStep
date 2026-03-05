@@ -5,6 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.vs.smartstep.main.presentation.chat.ChatRoot
 import com.vs.smartstep.main.presentation.myprofile.MyProfileRoot
 import com.vs.smartstep.main.presentation.smartstep.SmartStepHomeRoot
 
@@ -40,11 +41,22 @@ fun NavigationApp(
                        navController.navigate(AppRoute.Profile){
                            launchSingleTop = true
                        }
+                },
+                onNavigatetoAI = {
+                    navController.navigate(AppRoute.Chat){
+                        launchSingleTop = true
+                    }
                 }
 
             )
         }
-
+        composable<AppRoute.Chat> {
+            ChatRoot(
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
 
 
     }

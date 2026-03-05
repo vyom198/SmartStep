@@ -88,7 +88,8 @@ import timber.log.Timber
 @Composable
 fun SmartStepHomeRoot(
     viewModel: SmartStepHomeViewModel = koinViewModel(),
-    onNavigatetoProfileScreen : () -> Unit
+    onNavigatetoProfileScreen : () -> Unit,
+    onNavigatetoAI : () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context  = LocalContext.current
@@ -127,7 +128,9 @@ fun SmartStepHomeRoot(
     SmartStepHomeScreen(
         state = state,
         onAction = viewModel::onAction,
-        onNavigatetoProfileScreen = onNavigatetoProfileScreen
+        onNavigatetoProfileScreen = onNavigatetoProfileScreen,
+        onNavigatetoAI = onNavigatetoAI
+
     )
 }
 
@@ -136,7 +139,8 @@ fun SmartStepHomeRoot(
 fun SmartStepHomeScreen(
     state: SmartStepHomeState,
     onAction: (SmartStepHomeAction) -> Unit,
-    onNavigatetoProfileScreen : () -> Unit
+    onNavigatetoProfileScreen : () -> Unit,
+    onNavigatetoAI : () -> Unit
 
 ) {
    val context = LocalContext.current
@@ -378,7 +382,12 @@ fun SmartStepHomeScreen(
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 AIInsightCard(
-                    isConnected = state.isConnected
+                    isConnected = state.isConnected,
+                    insights = state.shortInsight,
+                    onMoreClick = onNavigatetoAI,
+                    onReload = {
+                        onAction(SmartStepHomeAction.onReload)
+                    }
                 )
             }
 
@@ -391,7 +400,7 @@ fun SmartStepHomeScreen(
                         onAction(SmartStepHomeAction.DismissDialog)
                     },
                     onDismiss = {
-                        onAction(SmartStepHomeAction.DismissDialog)
+                         onAction(SmartStepHomeAction.DismissDialog)
                     }
 
                 )

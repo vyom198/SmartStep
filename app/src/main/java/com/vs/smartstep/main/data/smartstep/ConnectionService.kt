@@ -21,18 +21,26 @@ class ConnectionService(
         .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
         .addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR)
         .build()
+    override val isConnected: Boolean
+        get() {
 
-    override val isConnected: Flow<Boolean>
-        get() = callbackFlow {
-            val networkCallback = object : ConnectivityManager.NetworkCallback(){
+            val activeNetwork = connectivityManager.activeNetwork ?: return false
+
+
+            val capabilities = connectivityManager.getNetworkCapabilities(activeNetwork) ?: return false
+
+
+            return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+                    capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+        }
+
+    override val isConnectedFlow: Flow<Boolean>
+        get() =  callbackFlow {
+            val networkCallback = object : ConnectivityManager.NetworkCallback() {
                 override fun onAvailable(network: Network) {
                     super.onAvailable(network)
                     trySend(true)
-                }
 
-                override fun onLost(network: Network) {
-                    super.onLost(network)
-                    trySend(false)
                 }
 
                 override fun onCapabilitiesChanged(
@@ -43,8 +51,15 @@ class ConnectionService(
                     val connected = networkCapabilities.hasCapability(
                         NetworkCapabilities.NET_CAPABILITY_VALIDATED
                     )
-                    trySend(connected)
+                 trySend(connected)
+
                 }
+
+                override fun onLost(network: Network) {
+                    super.onLost(network)
+                    trySend(false)
+                }
+
             }
             connectivityManager.requestNetwork(networkRequest, networkCallback)
 
@@ -52,4 +67,6 @@ class ConnectionService(
                 connectivityManager.unregisterNetworkCallback(networkCallback)
             }
         }
+
+
 }

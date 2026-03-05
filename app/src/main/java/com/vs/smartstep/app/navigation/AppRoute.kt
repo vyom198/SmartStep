@@ -8,5 +8,6 @@ sealed interface AppRoute {
 
     @Serializable
     object SmartStep : AppRoute
-
+    @Serializable
+    object Chat : AppRoute
 }
