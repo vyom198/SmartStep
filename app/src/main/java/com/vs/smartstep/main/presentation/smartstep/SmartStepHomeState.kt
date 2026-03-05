@@ -19,6 +19,7 @@ data class SmartStepHomeState(
     val distanceTravelled : Double = 0.0 ,
     val isMetric : Boolean = false,
     val kcalorie : Int = 0,
+    val shortInsight : String = "",
     val ListOfDays : List<DailyActivityUI> = emptyList(),
     val avgSteps : Int = 0,
     val currentItem : DailyActivityUI? = null

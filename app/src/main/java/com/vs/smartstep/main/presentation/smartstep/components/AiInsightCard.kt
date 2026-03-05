@@ -1,6 +1,7 @@
 package com.vs.smartstep.main.presentation.smartstep.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,7 +33,10 @@ import com.vs.smartstep.core.theme.bodySmallRegular
 
 @Composable
 fun AIInsightCard(
-    isConnected : Boolean
+    isConnected : Boolean,
+    insights : String,
+    onMoreClick : () -> Unit ,
+    onReload: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -87,13 +91,19 @@ fun AIInsightCard(
                 painter = painterResource(if(isConnected) R.drawable.arrow_forward else R.drawable.reload),
                 contentDescription = "more",
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(24.dp).clickable {
+                    if(isConnected){
+                        onMoreClick()
+                    }else{
+                        onReload()
+                    }
+                }
 
             )
         }
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = "\uD83D\uDCE1 Connect to the internet to get AI insights.",
+            text = if(isConnected)insights else stringResource(R.string.connect_to_the_internet_to_get_ai_insights),
             maxLines = 2,
             style = MaterialTheme.typography.bodyLargeMedium,
             color = MaterialTheme.colorScheme.onPrimary
