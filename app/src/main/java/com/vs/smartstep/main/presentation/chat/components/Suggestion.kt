@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -23,9 +22,8 @@ import com.vs.smartstep.core.theme.bodyLargeMedium
 @Composable
 fun Suggestions(
     isEnabled : Boolean,
-    onRecommendedWorkout : () -> Unit ,
-    onTodayTrend : () -> Unit,
-    onHowToReachGoal : () -> Unit
+    onSuggestionClick: (String) -> Unit ,
+
 ) {
 
     Column(
@@ -37,17 +35,23 @@ fun Suggestions(
         SuggestionItem(
             title = "Recommend workout",
             isEnabled,
-            onClick = onRecommendedWorkout
+            onClick = {
+                onSuggestionClick("Recommend workout")
+            }
         )
         SuggestionItem(
             title = "Explain today’s trend",
             isEnabled,
-            onClick = onTodayTrend
+            onClick = {
+                onSuggestionClick("Explain today’s trend")
+            }
         )
         SuggestionItem(
             title = "How to reach today’s goal ?",
             isEnabled,
-            onClick = onHowToReachGoal
+            onClick = {
+                onSuggestionClick("How to reach today’s goal ?")
+            }
         )
 
     }
