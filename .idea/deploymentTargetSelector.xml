@@ -5,10 +5,19 @@
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="MyProfileScreenPreview">
+      <SelectionState runConfigName="SmartStepHomeScreenPreview">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="SmartStepHomeScreenPreview">
+      <SelectionState runConfigName="loadUIdata should reflect steps currently in the database()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="InsertingStepsCheckingSteps()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="inserting_steps_updates_stepCount_in_state()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="InsertUpdate()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>
