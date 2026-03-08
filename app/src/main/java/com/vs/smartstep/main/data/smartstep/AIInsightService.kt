@@ -42,7 +42,6 @@ class AIInsightService(
             - Be warm and motivational
             - No quotes or formatting
         """.trimIndent()
-            Log.d("AIInsightService", "Prompt: $prompt")
             return model.generateContent(prompt).text?.trim() ?: ""
         }catch (e: Exception) {
             e.printStackTrace()
@@ -118,7 +117,7 @@ class AIInsightService(
 
             val response = model.generateContent(prompt)
             Log.d("AIInsightService", "Response: ${response.text}")
-            response.text?.trim() ?: "I'm here to help with your fitness questions. Could you please try again?"
+           return response.text?.trim() ?: "I'm here to help with your fitness questions. Could you please try again?"
         }catch (e: Exception) {
             e.printStackTrace()
         }

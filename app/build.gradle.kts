@@ -91,6 +91,8 @@ dependencies {
     implementation(libs.room.ktx)
     implementation(libs.room.runtime)
     ksp(libs.room.compiler)
+
+    implementation(libs.ui.test.manifest)
     implementation("com.google.firebase:firebase-ai")
         // For calculating screen size classes (Compact, Medium, Expanded)
     implementation("androidx.compose.material3:material3-window-size-class")
@@ -99,5 +101,21 @@ dependencies {
     implementation("androidx.compose.material3.adaptive:adaptive:1.0.0")
     implementation("androidx.compose.material3.adaptive:adaptive-layout:1.0.0")
     implementation("androidx.compose.material3.adaptive:adaptive-navigation:1.0.0")
-    
+
+    //test
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.3")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.3")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.9.3")
+
+    // Test
+    testImplementation ("com.willowtreeapps.assertk:assertk:0.26.1")
+    testImplementation ("io.mockk:mockk:1.12.5")
+    testImplementation ("com.squareup.okhttp3:mockwebserver:4.11.0")
+    testImplementation ("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.1")
+    testImplementation ("app.cash.turbine:turbine:0.7.0")
+
+    // Android test
+    androidTestImplementation ("io.mockk:mockk-android:1.12.5")
+    androidTestImplementation ("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
+    androidTestImplementation ("app.cash.turbine:turbine:0.7.0")
 }

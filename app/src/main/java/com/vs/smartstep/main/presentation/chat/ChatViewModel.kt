@@ -83,9 +83,11 @@ class ChatViewModel(
 
             is ChatAction.SendMessage -> {
                viewModelScope.launch {
+                   if(_state.value.query.isEmpty()) return@launch
                  withContext(Dispatchers.Main) {
                      _state.update {
                          it.copy(
+                             isSuggestion = false,
                              messages = it.messages + ChatMessage(
                                  content = action.text,
                                  sender = Sender.USER
