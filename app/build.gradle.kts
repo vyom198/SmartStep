@@ -24,7 +24,7 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "com.vs.smartstep.InstrumentationTestRunner"
     }
 
     buildTypes {
@@ -112,10 +112,11 @@ dependencies {
     testImplementation ("io.mockk:mockk:1.12.5")
     testImplementation ("com.squareup.okhttp3:mockwebserver:4.11.0")
     testImplementation ("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.1")
-    testImplementation ("app.cash.turbine:turbine:0.7.0")
+    testImplementation ("app.cash.turbine:turbine:1.2.1")
 
     // Android test
     androidTestImplementation ("io.mockk:mockk-android:1.12.5")
     androidTestImplementation ("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
-    androidTestImplementation ("app.cash.turbine:turbine:0.7.0")
+    androidTestImplementation ("app.cash.turbine:turbine:1.2.1")
+    androidTestImplementation("com.willowtreeapps.assertk:assertk:0.26.1")
 }
