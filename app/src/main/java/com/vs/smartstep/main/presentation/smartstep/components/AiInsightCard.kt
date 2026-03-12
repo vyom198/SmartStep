@@ -89,7 +89,7 @@ fun AIInsightCard(
             Spacer(modifier = Modifier.width(8.dp))
             Icon(
                 painter = painterResource(if(isConnected) R.drawable.arrow_forward else R.drawable.reload),
-                contentDescription = "more",
+                contentDescription = if(isConnected)"more" else "try_again",
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(24.dp).clickable {
                     if(isConnected){

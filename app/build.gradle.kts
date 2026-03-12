@@ -11,11 +11,7 @@ room {
 }
 android {
     namespace = "com.vs.smartstep"
-    compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.vs.smartstep"
@@ -41,6 +37,11 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 
+    testOptions {
+        unitTests.all {
+            it.useJUnitPlatform()
+        }
+    }
     buildFeatures {
         compose = true
         buildConfig = true
@@ -106,6 +107,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.3")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.3")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.9.3")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     // Test
     testImplementation ("com.willowtreeapps.assertk:assertk:0.26.1")
