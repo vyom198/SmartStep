@@ -28,6 +28,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.vs.smartstep.R
@@ -50,7 +52,9 @@ fun ChatWindow(list  : List<ChatMessage> , modifier: Modifier = Modifier) {
     LazyColumn(
         state = scrollState,
 
-        modifier = modifier.fillMaxSize().padding( 16.dp),
+        modifier = modifier.fillMaxSize().padding( 16.dp).semantics{
+            testTag = "chat_window"
+        },
         horizontalAlignment = if(windowSizeClass == WindowWidthSizeClass.COMPACT)
             Alignment.Start else Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)

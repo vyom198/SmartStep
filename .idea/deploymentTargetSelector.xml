@@ -5,19 +5,13 @@
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="SmartStepHomeScreenPreview">
+      <SelectionState runConfigName="testChatScreen()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="loadUIdata should reflect steps currently in the database()">
+      <SelectionState runConfigName="writeMessageDisplayedInChatWindow()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="InsertingStepsCheckingSteps()">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
-      <SelectionState runConfigName="inserting_steps_updates_stepCount_in_state()">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
-      <SelectionState runConfigName="InsertUpdate()">
+      <SelectionState runConfigName="activityLaunchesSuccessfully()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>

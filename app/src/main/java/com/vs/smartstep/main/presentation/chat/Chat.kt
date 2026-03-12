@@ -44,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -110,7 +111,7 @@ fun ChatScreen(
                 navigationIcon = {
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowLeft,
-                        contentDescription = null,
+                        contentDescription = "Back",
                         tint = Color(0xff4A4459),
                         modifier = Modifier
                             .size(34.dp)
@@ -246,7 +247,7 @@ fun ChatScreen(
                                 }
                                 .height(
                                     if (isFocused) 120.dp else 56.dp
-                                ),
+                                ).testTag("input_field"),
                         )
                         IconButton(
                             onClick = {
@@ -254,6 +255,7 @@ fun ChatScreen(
                                 onAction(ChatAction.ontextChange(""))
 
                             },
+
                             enabled = state.isInternetAvailable,
                             modifier = Modifier
                                 .size(44.dp)
@@ -263,7 +265,7 @@ fun ChatScreen(
                                 .background(
                                     color = if (state.isInternetAvailable) MaterialTheme.colorScheme.primary
                                     else ButtonSecondary
-                                )
+                                ).testTag("send")
                         ) {
                             Icon(
                                 painter = painterResource(R.drawable.send),
