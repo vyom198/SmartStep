@@ -57,4 +57,22 @@ Smart Step is a modern Android fitness tracker that helps users monitor their da
 
 
 ---
+## UI
+<img src="https://github.com/user-attachments/assets/1eb2bb6a-f64a-4c22-855d-adee27196163" width="200">
+<img src="https://github.com/user-attachments/assets/10f3a5a7-0aef-4165-81ef-d9ac4570ced8" width="200">
+<img src="https://github.com/user-attachments/assets/83f6be07-2c71-4c23-ac47-ecec03cc6862" width="200">
+<img src="https://github.com/user-attachments/assets/0224044e-8fe8-4965-9fd4-10f63ae4abf2" width="200">
+<img src="https://github.com/user-attachments/assets/a2b78d91-962f-4e60-aac1-b41ebc34223d" width="200">
+<img src="https://github.com/user-attachments/assets/ab7f3742-962b-4c50-9821-aad1f3fa7b9c" width="200">
+<img src="https://github.com/user-attachments/assets/6390ce3b-2973-496e-b7db-a11a485ccf15" width="200">
+<img src="https://github.com/user-attachments/assets/fa7cf1b0-9ed5-472d-abca-6bad35570d88" width="200">
+
+
+
+
+
+
+
+
+
 
