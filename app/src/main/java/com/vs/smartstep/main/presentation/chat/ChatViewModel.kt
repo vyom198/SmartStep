@@ -83,8 +83,8 @@ class ChatViewModel(
 
             is ChatAction.SendMessage -> {
                viewModelScope.launch {
-                   if(_state.value.query.isEmpty()) return@launch
-                 withContext(Dispatchers.Main) {
+                   if( action.text.isEmpty()) return@launch
+                  withContext(Dispatchers.Main) {
                      _state.update {
                          it.copy(
                              isSuggestion = false,
@@ -94,7 +94,7 @@ class ChatViewModel(
                              )
                          )
                      }
-                 }
+                   }
                        withContext(Dispatchers.IO) {
                        val reply = aiInsights.chatWithAI(action.text)
                        withContext(Dispatchers.Main) {

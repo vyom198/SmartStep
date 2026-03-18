@@ -189,8 +189,8 @@ fun ChatScreen(
                         Spacer(modifier = Modifier.height(20.dp))
                         Suggestions(
                             isEnabled = state.isInternetAvailable,
-                            onSuggestionClick = {
-                                onAction(ChatAction.SendMessage(it))
+                            onSuggestionClick = { message ->
+                                onAction(ChatAction.SendMessage(message))
                             }
                         )
                     }
