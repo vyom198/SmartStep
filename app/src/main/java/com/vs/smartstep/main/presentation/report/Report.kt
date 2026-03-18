@@ -3,12 +3,18 @@ package com.vs.smartstep.main.presentation.report
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -19,6 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
@@ -30,6 +37,7 @@ import com.vs.smartstep.core.theme.StrokeMain
 import com.vs.smartstep.core.theme.segmentedText
 import com.vs.smartstep.core.theme.title_Medium
 import com.vs.smartstep.main.presentation.chat.components.ChatWindow
+import com.vs.smartstep.main.presentation.report.components.SummaryCard
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -61,6 +69,7 @@ fun ReportScreen(
             ),
         topBar = {
             CenterAlignedTopAppBar(
+                modifier = Modifier.padding(horizontal = 16.dp),
                 title = {
                     Text(
                         text = "Report",
@@ -104,8 +113,11 @@ fun ReportScreen(
                 thickness = 1.dp,
                 color = StrokeMain
             )
-            Column(modifier = Modifier.weight(1f)) {
-
+            Spacer(modifier = Modifier.height(14.dp))
+            Column(modifier = Modifier.fillMaxWidth().weight(1f).padding(horizontal = 16.dp) ,
+                  horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                SummaryCard()
             }
         }
     }

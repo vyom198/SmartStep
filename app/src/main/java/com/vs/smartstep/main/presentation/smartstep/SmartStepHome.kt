@@ -65,6 +65,7 @@ import com.vs.smartstep.R
 import com.vs.smartstep.core.theme.BackgroundWhite20
 import com.vs.smartstep.core.theme.SmartStepTheme
 import com.vs.smartstep.core.theme.bodyLargeMedium
+import com.vs.smartstep.core.theme.bodyMediumRegular
 import com.vs.smartstep.core.theme.segmentedText
 import com.vs.smartstep.core.theme.title_Accent
 import com.vs.smartstep.core.theme.title_Medium
@@ -209,7 +210,7 @@ fun SmartStepHomeScreen(
                     title = {
                         Text(
                             text = "Smart Step",
-                            style = MaterialTheme.typography.title_Medium,
+                            style = MaterialTheme.typography.bodyMediumRegular,
                             color = segmentedText
                         )
                     },
@@ -325,7 +326,7 @@ fun SmartStepHomeScreen(
                         }
 
 
-                        Spacer(modifier = Modifier.height(10.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                            horizontalArrangement = Arrangement.SpaceBetween
@@ -348,10 +349,11 @@ fun SmartStepHomeScreen(
                                     color =  Color.White
                                 )
                                 Icon(
-                                    modifier = Modifier.clickable {
+                                    modifier = Modifier.size(12.dp).clickable {
                                         onNavigatetoReport()
                                     },
                                     painter = painterResource(R.drawable.report_arrow),
+                                    tint = Color.White,
                                     contentDescription = "report",
                                 )
                             }
