@@ -49,6 +49,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -89,7 +90,8 @@ import timber.log.Timber
 fun SmartStepHomeRoot(
     viewModel: SmartStepHomeViewModel = koinViewModel(),
     onNavigatetoProfileScreen : () -> Unit,
-    onNavigatetoAI : () -> Unit
+    onNavigatetoAI : () -> Unit,
+    onNavigatetoReport : () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context  = LocalContext.current
@@ -129,7 +131,8 @@ fun SmartStepHomeRoot(
         state = state,
         onAction = viewModel::onAction,
         onNavigatetoProfileScreen = onNavigatetoProfileScreen,
-        onNavigatetoAI = onNavigatetoAI
+        onNavigatetoAI = onNavigatetoAI,
+        onNavigatetoReport = onNavigatetoReport
 
     )
 }
@@ -140,7 +143,8 @@ fun SmartStepHomeScreen(
     state: SmartStepHomeState,
     onAction: (SmartStepHomeAction) -> Unit,
     onNavigatetoProfileScreen : () -> Unit,
-    onNavigatetoAI : () -> Unit
+    onNavigatetoAI : () -> Unit,
+    onNavigatetoReport : () -> Unit
 
 ) {
    val context = LocalContext.current
@@ -322,11 +326,39 @@ fun SmartStepHomeScreen(
 
 
                         Spacer(modifier = Modifier.height(10.dp))
-                        Text(
-                            text = state.stepCount.toCommaString(),
-                            style =  MaterialTheme.typography.title_Accent,
-                            color = if(state.playPause) Color.White else BackgroundWhite20
-                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                           horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = state.stepCount.toCommaString(),
+                                modifier = Modifier.align(Alignment.CenterVertically),
+                                style =  MaterialTheme.typography.title_Accent,
+                                color = if(state.playPause) Color.White else BackgroundWhite20
+                            )
+                            Row(
+                               verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.align(Alignment.Top),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+
+                            ) {
+                                Text(
+                                    text = "Report",
+                                    style =  MaterialTheme.typography.title_Medium,
+                                    color =  Color.White
+                                )
+                                Icon(
+                                    modifier = Modifier.clickable {
+                                        onNavigatetoReport()
+                                    },
+                                    painter = painterResource(R.drawable.report_arrow),
+                                    contentDescription = "report",
+                                )
+                            }
+
+
+                        }
+
                         Text(
                             text = if(!state.playPause)"Paused" else "/${state.dailyGoal} Steps",
                             style = MaterialTheme.typography.title_Medium,

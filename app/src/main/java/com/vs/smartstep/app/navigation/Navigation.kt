@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.vs.smartstep.main.presentation.chat.ChatRoot
 import com.vs.smartstep.main.presentation.myprofile.MyProfileRoot
+import com.vs.smartstep.main.presentation.report.ReportRoot
 import com.vs.smartstep.main.presentation.smartstep.SmartStepHomeRoot
 
 
@@ -46,7 +47,13 @@ fun NavigationApp(
                     navController.navigate(AppRoute.Chat){
                         launchSingleTop = true
                     }
+                },
+                onNavigatetoReport = {
+                     navController.navigate(AppRoute.Report){
+                         launchSingleTop = true
+                     }
                 }
+
 
             )
         }
@@ -56,6 +63,14 @@ fun NavigationApp(
                     navController.popBackStack()
                 }
             )
+        }
+
+        composable<AppRoute.Report>{
+           ReportRoot(
+               onBackClick = {
+                   navController.popBackStack()
+               }
+           )
         }
 
 
