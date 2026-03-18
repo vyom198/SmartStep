@@ -38,13 +38,18 @@ fun WeeklyChart(
 
 
     Column(
-        modifier = Modifier.width(380.dp).height(153.dp).clip(
-            RoundedCornerShape(28.dp)
-        ).background(
-            color = MaterialTheme.colorScheme.primary
-        ).padding(
-            16.dp
-        )
+        modifier = Modifier
+            .width(380.dp)
+            .height(153.dp)
+            .clip(
+                RoundedCornerShape(28.dp)
+            )
+            .background(
+                color = MaterialTheme.colorScheme.primary
+            )
+            .padding(
+                16.dp
+            )
     ){
         Text(
             text = "Daily Average: ${avgSteps.toCommaString()} steps",
@@ -53,7 +58,9 @@ fun WeeklyChart(
         )
         Spacer(modifier = Modifier.height(12.dp))
         Row(
-            modifier = Modifier.fillMaxWidth().height(80.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(80.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             list.forEach { item ->
@@ -73,9 +80,13 @@ fun DailyItemUI(item: DailyActivityUI) {
         modifier = Modifier.wrapContentSize(),
         horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
     ) {
-       StepRing(
-           progress = (item.steps.toFloat()/item.stepGoal.toFloat()).coerceIn(0f,1f),
-       )
+        StepRing(
+            progress = if (item.stepGoal > 0) {
+                (item.steps.toFloat() / item.stepGoal.toFloat()).coerceIn(0f, 1f)
+            } else {
+                0f // If goal is 0, progress is 0
+            }
+        )
         Text(
             text = item.day,
             style = MaterialTheme.typography.bodyMediumRegular,

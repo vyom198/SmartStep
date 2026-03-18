@@ -89,16 +89,17 @@ class StepDetector(
                             )
                         )
                         stepDifference = 0
-                    }else{
-                        dao.insertDailyStep(
-                            existingActivity.copy(
-                                steps = dailySteps,
-                                lastSensorValue = totalStepsSinceBoot.toLong(),
-                                timeTaken = existingActivity.timeTaken + timeDelta,
+                    }else {
+                        if (userProfileStore.getStep().first() > 0) {
+                            dao.insertDailyStep(
+                                existingActivity.copy(
+                                    steps = dailySteps,
+                                    lastSensorValue = totalStepsSinceBoot.toLong(),
+                                    timeTaken = existingActivity.timeTaken + timeDelta,
+                                )
                             )
-                        )
+                        }
                     }
-
 
                 } else {
                     val yesterdayActivity = dao.getDailyStepByDate(getDaysAgoDate(1))
