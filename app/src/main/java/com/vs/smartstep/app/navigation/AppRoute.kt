@@ -5,9 +5,11 @@ import kotlinx.serialization.Serializable
 sealed interface AppRoute {
     @Serializable
     object Profile : AppRoute
-
+    @Serializable
+    object Report : AppRoute
     @Serializable
     object SmartStep : AppRoute
     @Serializable
+
     object Chat : AppRoute
 }

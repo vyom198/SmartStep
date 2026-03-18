@@ -10,6 +10,7 @@ import com.vs.smartstep.main.domain.smartStep.StepProvider
 import com.vs.smartstep.main.domain.smartStep.userProfileStore
 import com.vs.smartstep.main.presentation.chat.ChatViewModel
 import com.vs.smartstep.main.presentation.myprofile.MyProfileViewModel
+import com.vs.smartstep.main.presentation.report.ReportViewModel
 import com.vs.smartstep.main.presentation.smartstep.SmartStepHomeViewModel
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
@@ -18,6 +19,7 @@ import org.koin.dsl.module
 
 val mainModule = module {
     viewModelOf(::MyProfileViewModel)
+    viewModelOf(::ReportViewModel)
     viewModelOf(::SmartStepHomeViewModel)
     viewModelOf(::ChatViewModel)
     singleOf(::ConnectionService) bind ConnectionProvider :: class
